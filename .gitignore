@@ -12,6 +12,8 @@ __pycache__/
 # C# / .NET build artifacts
 *.pdb
 *.obj
+dist/
+*.zip
 
 # Entornos virtuales
 .venv/
