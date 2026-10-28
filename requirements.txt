@@ -1,0 +1,25 @@
+# ====================================================
+# LabVision v0.3 - Dependencias de Python
+# Digitalización de Pantallas de Laboratorio a Excel & CSV
+# Creado por NachoFari
+# ====================================================
+
+# Motor de Visión y GUI Nativa
+pywebview>=5.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Reconocimiento Óptico de Caracteres (OCR)
+easyocr>=1.7.0
+
+# Exportación y Procesamiento de Datos
+openpyxl>=3.1.0
+pandas>=2.0.0
+
+# Notificaciones y Redes
+requests>=2.31.0
+
+# Dependencias Opcionales de Aceleración por GPU (CUDA):
+# Para aceleración NVIDIA CUDA 12.x ejecutar:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121

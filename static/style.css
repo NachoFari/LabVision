@@ -1,0 +1,173 @@
+/* =========================================================
+   LabVision Pro • Sistema de Estilos y Temas de Laboratorio
+   Creado por NachoFari
+   ========================================================= */
+
+html, body {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-lab-dark: #0B0F19;
+  --color-lab-card: #131B2E;
+  --color-lab-border: #1F293D;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-surface-hover: rgba(255, 255, 255, 0.05);
+}
+
+/* ================= THEME DEFINITIONS ================= */
+/* 1. MODO OSCURO LAB (DEFAULT) */
+html.theme-dark, body.theme-dark {
+  --color-lab-dark: #0B0F19;
+  --color-lab-card: #131B2E;
+  --color-lab-border: #1F293D;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-surface-hover: rgba(255, 255, 255, 0.05);
+}
+
+/* 2. MODO CLARO BIO-MÉDICO */
+html.theme-light, body.theme-light {
+  --color-lab-dark: #f1f5f9;
+  --color-lab-card: #ffffff;
+  --color-lab-border: #cbd5e1;
+  --color-text-main: #0f172a;
+  --color-text-muted: #475569;
+  --color-accent: #0284c7;
+  --color-surface-hover: rgba(0, 0, 0, 0.04);
+}
+body.theme-light {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+body.theme-light .bg-lab-dark { background-color: #f1f5f9 !important; }
+body.theme-light .bg-lab-card { background-color: #ffffff !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); }
+body.theme-light .border-lab-border { border-color: #cbd5e1 !important; }
+body.theme-light .text-slate-400 { color: #475569 !important; }
+body.theme-light .text-slate-300 { color: #334155 !important; }
+body.theme-light .text-white { color: #0f172a !important; }
+body.theme-light .bg-slate-900,
+body.theme-light .bg-slate-900\/60 { background-color: #f8fafc !important; }
+body.theme-light .bg-slate-800,
+body.theme-light .bg-slate-800\/80,
+body.theme-light .bg-slate-800\/50,
+body.theme-light .bg-slate-800\/40 { background-color: #e2e8f0 !important; color: #1e293b !important; }
+body.theme-light .border-slate-700,
+body.theme-light .border-slate-800 { border-color: #cbd5e1 !important; }
+body.theme-light thead,
+body.theme-light thead tr,
+body.theme-light thead th {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  border-color: #cbd5e1 !important;
+}
+body.theme-light tbody tr { border-color: #e2e8f0 !important; color: #0f172a !important; }
+body.theme-light tbody tr:hover { background-color: #f1f5f9 !important; }
+
+/* 3. MODO CYBER OLED (ALTO CONTRASTE) */
+html.theme-oled, body.theme-oled {
+  --color-lab-dark: #000000;
+  --color-lab-card: #040812;
+  --color-lab-border: #00f0ff;
+  --color-text-main: #ffffff;
+  --color-text-muted: #7dd3fc;
+  --color-accent: #00ff88;
+  --color-surface-hover: rgba(0, 240, 255, 0.08);
+}
+body.theme-oled {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+body.theme-oled .bg-lab-dark { background-color: #000000 !important; }
+body.theme-oled .bg-lab-card { background-color: #030712 !important; border-color: rgba(0, 240, 255, 0.4) !important; }
+body.theme-oled .border-lab-border { border-color: rgba(0, 240, 255, 0.35) !important; }
+
+/* 4. MODO ÁMBAR NOCTURNO (SEPIA CIENTÍFICO) */
+html.theme-sepia, body.theme-sepia {
+  --color-lab-dark: #120e0a;
+  --color-lab-card: #1c1610;
+  --color-lab-border: #3d2e1e;
+  --color-text-main: #fef3c7;
+  --color-text-muted: #d97706;
+  --color-accent: #f59e0b;
+  --color-surface-hover: rgba(245, 158, 11, 0.08);
+}
+body.theme-sepia {
+  background-color: #120e0a !important;
+  color: #fef3c7 !important;
+}
+body.theme-sepia .bg-lab-dark { background-color: #120e0a !important; }
+body.theme-sepia .bg-lab-card { background-color: #1c1610 !important; border-color: #3d2e1e !important; }
+body.theme-sepia .border-lab-border { border-color: #3d2e1e !important; }
+body.theme-sepia .text-slate-400 { color: #b45309 !important; }
+body.theme-sepia .text-white { color: #fef3c7 !important; }
+
+/* ================= ESCALADO DE TIPOGRAFÍA ================= */
+body.font-large {
+  font-size: 112%;
+}
+body.font-large h1 { font-size: 1.35rem; }
+body.font-large th { font-size: 0.75rem; }
+body.font-large td { font-size: 0.85rem; }
+
+/* ================= DENSIDAD DE TABLA ================= */
+table.density-compact th,
+table.density-compact td {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  font-size: 11px !important;
+}
+
+/* ================= SCROLLBARS LIMPIAS ================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(11, 15, 25, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f293d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+/* ================= CANVAS Y LECTURAS ================= */
+#roi-canvas {
+  touch-action: none;
+}
+
+.table-row-warn {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+.table-row-warn td {
+  color: #f87171 !important;
+  font-weight: 600;
+}
+
+/* ================= PIXEL ART CRISP RENDERING ================= */
+svg[style*="crispEdges"], .pixel-art {
+  shape-rendering: crispEdges !important;
+  image-rendering: pixelated !important;
+}
+
+/* ================= ANIMACIONES DE PULSO Y TRANSICIONES ================= */
+.theme-transition {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}

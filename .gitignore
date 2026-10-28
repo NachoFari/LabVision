@@ -1,0 +1,48 @@
+# ==========================================
+# LabVision - .gitignore
+# Creado por NachoFari
+# ==========================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# C# / .NET build artifacts
+*.pdb
+*.obj
+
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Carpeta de salida de mediciones (mantener solo .gitkeep)
+output/*
+!output/.gitkeep
+
+# Archivos de configuración con secretos (webhooks de Discord)
+config.json
+
+# IDEs y Editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Archivos del Sistema Operativo
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Logs temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
