@@ -69,7 +69,7 @@
       <div>
         <div class="flex items-center space-x-2">
           <h1 class="text-base font-bold tracking-tight text-white">LabVision</h1>
-          <span class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v0.3</span>
+          <span class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v0.8</span>
         </div>
         <p class="text-[11px] text-slate-400">Digitalización de Pantallas de Laboratorio a Excel & CSV</p>
       </div>
@@ -215,7 +215,7 @@
   <main id="screen-live" class="flex-1 min-h-0 h-full p-5 grid grid-cols-12 gap-5 overflow-hidden transition-all duration-300">
 
     <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN Y VISOR DE RECORTE -->
-    <div id="col-left" class="col-span-5 flex flex-col space-y-3 h-full min-h-0 overflow-hidden">
+    <div id="col-left" class="col-span-5 flex flex-col space-y-3 h-full min-h-0 overflow-y-auto pr-1.5 custom-scrollbar">
 
       <!-- AVISO DE CONTROLES BLOQUEADOS DURANTE LA ADQUISICIÓN -->
       <div id="lock-status-badge" class="hidden bg-amber-950/80 border border-amber-600/70 rounded-xl px-3 py-2 text-amber-200 text-xs flex items-center justify-between lock-badge-pulse shadow-sm">
@@ -390,20 +390,34 @@
       </div>
 
       <!-- SECCIÓN 3: CANVAS ROI -->
-      <div id="section-canvas" class="bg-lab-card border border-lab-border rounded-xl p-3.5 space-y-2.5 flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div id="section-canvas" class="bg-lab-card border border-lab-border rounded-xl p-3.5 space-y-2.5 flex-1 min-h-[380px] flex flex-col">
         <div class="flex items-center justify-between">
           <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">3. Encuadre de la Pantalla</label>
-          <div class="flex space-x-2">
-            <button onclick="switchScreen('calibration')" class="text-[11px] text-amber-400 hover:text-amber-300 font-medium flex items-center space-x-1">
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="openExpandedRoiModal()" title="Ampliar a pantalla grande para dibujar el recorte con precisión" class="text-[11px] text-cyan-300 hover:text-cyan-200 font-semibold flex items-center space-x-1 bg-cyan-950/70 hover:bg-cyan-900/80 px-2 py-0.5 rounded border border-cyan-700/60 transition-all">
+              <svg class="w-3 h-3 text-cyan-400" viewBox="0 0 16 16" fill="currentColor">
+                <rect x="2" y="2" width="4" height="2"/>
+                <rect x="2" y="2" width="2" height="4"/>
+                <rect x="10" y="2" width="4" height="2"/>
+                <rect x="12" y="2" width="2" height="4"/>
+                <rect x="2" y="12" width="4" height="2"/>
+                <rect x="2" y="10" width="2" height="4"/>
+                <rect x="10" y="12" width="4" height="2"/>
+                <rect x="12" y="10" width="2" height="4"/>
+              </svg>
+              <span>Ampliar</span>
+            </button>
+            <span class="text-slate-600">|</span>
+            <button type="button" onclick="switchScreen('calibration')" class="text-[11px] text-amber-400 hover:text-amber-300 font-medium flex items-center space-x-1">
               <span>Calibrar</span>
             </button>
             <span class="text-slate-600">|</span>
-            <button onclick="clearRoi()" class="text-[11px] text-rose-400 hover:text-rose-300">Limpiar</button>
+            <button type="button" onclick="clearRoi()" class="text-[11px] text-rose-400 hover:text-rose-300 font-medium">Limpiar</button>
           </div>
         </div>
 
-        <div class="flex-1 min-h-0 relative w-full bg-black rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center">
-          <canvas id="roi-canvas" class="max-w-full max-h-full cursor-crosshair"></canvas>
+        <div id="canvas-container" class="relative w-full bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center transition-all duration-300" style="min-height: 340px; height: 440px;">
+          <canvas id="roi-canvas" class="max-w-full max-h-full cursor-crosshair object-contain block mx-auto"></canvas>
           <div id="canvas-placeholder" class="absolute text-center p-3 pointer-events-none">
             <svg class="w-7 h-7 mx-auto mb-1 text-slate-600" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
               <rect x="7" y="7" width="2" height="2"/>
@@ -1018,6 +1032,26 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ENCUADRE AMPLIADO (PANTALLA COMPLETA) -->
+  <div id="modal-expanded-roi" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col p-6 hidden">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl">🔍</span>
+        <div>
+          <h3 class="text-sm font-bold text-white">Encuadre de Pantalla en Alta Definición</h3>
+          <p class="text-[11px] text-slate-400">Haz clic y arrastra sobre la pantalla del instrumento para seleccionar el área de lectura.</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button type="button" onclick="clearRoi()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 border border-slate-700 text-xs font-semibold">Limpiar Recuadro</button>
+        <button type="button" onclick="closeExpandedRoiModal()" class="px-4 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md shadow-cyan-950/40">Aplicar y Cerrar</button>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 relative w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center p-3 mt-3">
+      <canvas id="roi-canvas-expanded" class="max-w-full max-h-full cursor-crosshair object-contain block mx-auto"></canvas>
     </div>
   </div>
 

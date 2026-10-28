@@ -294,7 +294,7 @@ def generate_balance_video(output_path: str, duration_sec: int = 6, fps: int = 1
     return ground_truth
 
 if __name__ == "__main__":
-    out_dir = r"E:\reotaxis\output"
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "output")
     v_path = os.path.join(out_dir, "benchmark_viscometer.mp4")
     b_path = os.path.join(out_dir, "benchmark_balance.mp4")
     

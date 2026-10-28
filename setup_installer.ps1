@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # LabVision - Setup & Installation Engine (PowerShell)
 # Autor: NachoFari / LabVision Team
 # ==============================================================================
@@ -16,7 +16,8 @@ param(
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (-not $ScriptDir) { $ScriptDir = "E:\reotaxis" }
+if (-not $ScriptDir) { $ScriptDir = $PSScriptRoot }
+if (-not $ScriptDir) { $ScriptDir = (Get-Location).Path }
 
 # Colores y Formato
 function Write-Header {
@@ -58,7 +59,7 @@ function Show-AsciiBanner {
     Write-Host " | |   / _`` || '_ \ \ \ / /| / __| |/ _ \| '_ \  | |_) | '__/ _ \ " -ForegroundColor Cyan
     Write-Host " | |__| (_| || |_) | \ V / | \__ \ | (_) | | | | |  __/| | | (_) |" -ForegroundColor Cyan
     Write-Host " |_____\__,_||_.__/   \_/  |_|___/_|\___/|_| |_| |_|   |_|  \___/ " -ForegroundColor Cyan
-    Write-Host "                                            EDICION PROFESIONAL v0.3" -ForegroundColor DarkCyan
+    Write-Host "                                            EDICION PROFESIONAL v0.8" -ForegroundColor DarkCyan
     Write-Host "      Sistema Inteligente de Captura de Pantallas de Laboratorio" -ForegroundColor Gray
 }
 
@@ -70,10 +71,12 @@ function Find-PythonEnvironment {
 
     $candidates = [System.Collections.Generic.List[string]]::new()
     
+    # 0. Runtime portable local
+    [void]$candidates.Add((Join-Path $ScriptDir "runtime\python.exe"))
+
     # 1. Virtual environments conocidos
-    [void]$candidates.Add("C:\Users\farin\.venv\Scripts\python.exe")
-    [void]$candidates.Add((Join-Path $env:USERPROFILE ".venv\Scripts\python.exe"))
     [void]$candidates.Add((Join-Path $ScriptDir ".venv\Scripts\python.exe"))
+    [void]$candidates.Add((Join-Path $env:USERPROFILE ".venv\Scripts\python.exe"))
 
     # 2. Rutas estandar de Python en Windows
     $localApp = $env:LOCALAPPDATA

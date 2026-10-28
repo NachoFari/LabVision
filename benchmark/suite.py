@@ -10,7 +10,7 @@ Pruebas ejecutadas:
 - Métricas: Latencia (ms/cuadro), Throughput (FPS), Tasa de acierto (%)
 
 Resultados exportados en:
-- JSON: E:\reotaxis\output\benchmark_results.json
+- JSON: output\benchmark_results.json
 - Tabla comparativa en Markdown impresa por consola
 """
 

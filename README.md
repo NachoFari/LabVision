@@ -1,7 +1,7 @@
-# 🧪 LabVision `v0.3`
+# 🧪 LabVision `v0.8`
 ### *Digitalización Inteligente de Pantallas de Laboratorio a Excel & CSV*
 
-[![Version](https://img.shields.io/badge/version-v0.3-cyan.svg)](https://github.com/NachoFari)
+[![Version](https://img.shields.io/badge/version-v0.8-cyan.svg)](https://github.com/NachoFari)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![GUI](https://img.shields.io/badge/gui-PyWebView%20%2B%20Edge%20Chromium-teal.svg)](https://pywebview.flowrl.com/)
 [![OCR Engine](https://img.shields.io/badge/ocr-OpenCV%20%2B%20EasyOCR%20%2B%20PyTorch-emerald.svg)](https://github.com/JaidedAI/EasyOCR)
@@ -53,7 +53,7 @@ Los datos leídos se procesan mediante visión por computadora (OpenCV y PyTorch
 ## 📁 Estructura del Repositorio
 
 ```text
-E:\reotaxis\
+LabVision/
 ├── app.py                      # Backend principal y puente PyWebView <-> Python
 ├── ocr_engine.py               # Orquestador del motor de visión OCR
 ├── Launcher.cs                 # Código fuente del lanzador nativo C# WinExe

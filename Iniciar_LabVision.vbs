@@ -1,4 +1,4 @@
-﻿Option Explicit
+Option Explicit
 
 Dim WshShell, fso, scriptDir, userProfile, localAppData, candidatePaths, pythonwPath, i
 Set WshShell = CreateObject("WScript.Shell")
@@ -10,30 +10,37 @@ WshShell.CurrentDirectory = scriptDir
 userProfile = WshShell.ExpandEnvironmentStrings("%USERPROFILE%")
 localAppData = WshShell.ExpandEnvironmentStrings("%LOCALAPPDATA%")
 
-candidatePaths = Array( _
-    "C:\Users\farin\.venv\Scripts\pythonw.exe", _
-    userProfile & "\.venv\Scripts\pythonw.exe", _
-    scriptDir & "\.venv\Scripts\pythonw.exe", _
-    localAppData & "\Programs\Python\Python312\pythonw.exe", _
-    localAppData & "\Programs\Python\Python311\pythonw.exe", _
-    localAppData & "\Programs\Python\Python310\pythonw.exe", _
-    "C:\Python312\pythonw.exe", _
-    "C:\Python311\pythonw.exe", _
-    "C:\Python310\pythonw.exe", _
-    "C:\Program Files\Python312\pythonw.exe", _
-    "C:\Program Files\Python311\pythonw.exe" _
-)
-
 pythonwPath = ""
 
-For i = 0 To UBound(candidatePaths)
-    If fso.FileExists(candidatePaths(i)) Then
-        pythonwPath = candidatePaths(i)
-        Exit For
-    End If
-Next
+' 1. Prioridad: Runtime portable local
+If fso.FileExists(scriptDir & "\runtime\pythonw.exe") Then
+    pythonwPath = scriptDir & "\runtime\pythonw.exe"
+End If
 
-' Si no esta en las rutas conocidas, buscar pythonw.exe en cada directorio del PATH
+' 2. Entorno virtual local o rutas estandar
+If pythonwPath = "" Then
+    candidatePaths = Array( _
+        scriptDir & "\.venv\Scripts\pythonw.exe", _
+        userProfile & "\.venv\Scripts\pythonw.exe", _
+        localAppData & "\Programs\Python\Python312\pythonw.exe", _
+        localAppData & "\Programs\Python\Python311\pythonw.exe", _
+        localAppData & "\Programs\Python\Python310\pythonw.exe", _
+        "C:\Python312\pythonw.exe", _
+        "C:\Python311\pythonw.exe", _
+        "C:\Python310\pythonw.exe", _
+        "C:\Program Files\Python312\pythonw.exe", _
+        "C:\Program Files\Python311\pythonw.exe" _
+    )
+
+    For i = 0 To UBound(candidatePaths)
+        If fso.FileExists(candidatePaths(i)) Then
+            pythonwPath = candidatePaths(i)
+            Exit For
+        End If
+    Next
+End If
+
+' 3. Buscar pythonw.exe en directorios del PATH del sistema
 If pythonwPath = "" Then
     Dim envPath, pathArr, p
     envPath = WshShell.ExpandEnvironmentStrings("%PATH%")
@@ -62,7 +69,6 @@ WshShell.Run """" & pythonwPath & """ """ & scriptDir & "\app.py""", 0, False
 If Err.Number <> 0 Then
     MsgBox "No se pudo iniciar LabVision." & vbCrLf & _
            "Detalle: " & Err.Description & vbCrLf & vbCrLf & _
-           "Por favor, ejecute 'Instalador_LabVision.bat' para configurar el entorno.", _
+           "Por favor, verifique el entorno de Python o ejecute 'Iniciar_LabVision.bat'.", _
            16, "LabVision - Error al Iniciar"
 End If
-

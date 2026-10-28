@@ -418,7 +418,29 @@ async function loadFramePreview(source) {
       canvas.width = res.preview_width;
       canvas.height = res.preview_height;
     }
+    const expCanvas = document.getElementById('roi-canvas-expanded');
+    if (expCanvas) {
+      expCanvas.width = res.preview_width;
+      expCanvas.height = res.preview_height;
+    }
     if (placeholder) placeholder.classList.add('hidden');
+
+    // Adaptación dinámica de altura según la orientación del archivo (vertical smartphone vs horizontal)
+    const container = document.getElementById('canvas-container');
+    if (container) {
+      const aspect = res.preview_width / res.preview_height;
+      if (aspect < 0.85) {
+        // Video vertical (tipo celular 9:16)
+        container.style.height = '480px';
+        container.style.minHeight = '460px';
+      } else if (aspect < 1.25) {
+        container.style.height = '380px';
+        container.style.minHeight = '360px';
+      } else {
+        container.style.height = '320px';
+        container.style.minHeight = '280px';
+      }
+    }
 
     if (res.suggested_roi && !currentRoi) {
       currentRoi = res.suggested_roi;
@@ -432,57 +454,68 @@ async function loadFramePreview(source) {
 }
 
 function redrawCanvas() {
-  if (!loadedImage || !canvas || !ctx) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(loadedImage.element, 0, 0, canvas.width, canvas.height);
+  if (!loadedImage) return;
 
-  if (currentRoi) {
-    const scaleX = canvas.width / loadedImage.origWidth;
-    const scaleY = canvas.height / loadedImage.origHeight;
-    const rx = currentRoi[0] * scaleX;
-    const ry = currentRoi[1] * scaleY;
-    const rw = currentRoi[2] * scaleX;
-    const rh = currentRoi[3] * scaleY;
-
-    // Sombra oscura
-    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-    ctx.fillRect(0, 0, canvas.width, ry);
-    ctx.fillRect(0, ry, rx, rh);
-    ctx.fillRect(rx + rw, ry, canvas.width - (rx + rw), rh);
-    ctx.fillRect(0, ry + rh, canvas.width, canvas.height - (ry + rh));
-
-    // Borde Neón
-    ctx.strokeStyle = "#00f0ff";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 2]);
-    ctx.strokeRect(rx, ry, rw, rh);
-    ctx.setLineDash([]);
-
-    // Etiqueta
-    ctx.fillStyle = "#00f0ff";
-    ctx.font = "bold 11px monospace";
-    ctx.fillText("PANTALLA SELECCIONADA", rx + 4, Math.max(14, ry - 4));
+  const targets = [];
+  if (canvas && ctx) targets.push({ c: canvas, x: ctx });
+  const expCanvas = document.getElementById('roi-canvas-expanded');
+  if (expCanvas) {
+    const expCtx = expCanvas.getContext('2d');
+    if (expCtx) targets.push({ c: expCanvas, x: expCtx });
   }
+
+  targets.forEach(({ c, x }) => {
+    x.clearRect(0, 0, c.width, c.height);
+    x.drawImage(loadedImage.element, 0, 0, c.width, c.height);
+
+    if (currentRoi) {
+      const scaleX = c.width / loadedImage.origWidth;
+      const scaleY = c.height / loadedImage.origHeight;
+      const rx = currentRoi[0] * scaleX;
+      const ry = currentRoi[1] * scaleY;
+      const rw = currentRoi[2] * scaleX;
+      const rh = currentRoi[3] * scaleY;
+
+      // Sombra oscura
+      x.fillStyle = "rgba(0, 0, 0, 0.45)";
+      x.fillRect(0, 0, c.width, ry);
+      x.fillRect(0, ry, rx, rh);
+      x.fillRect(rx + rw, ry, c.width - (rx + rw), rh);
+      x.fillRect(0, ry + rh, c.width, c.height - (ry + rh));
+
+      // Borde Neón
+      x.strokeStyle = "#00f0ff";
+      x.lineWidth = 2;
+      x.setLineDash([4, 2]);
+      x.strokeRect(rx, ry, rw, rh);
+      x.setLineDash([]);
+
+      // Etiqueta
+      x.fillStyle = "#00f0ff";
+      x.font = "bold 11px monospace";
+      x.fillText("PANTALLA SELECCIONADA", rx + 4, Math.max(14, ry - 4));
+    }
+  });
 }
 
-function setupCanvasEvents() {
-  if (!canvas) return;
+function attachRoiDrawingEvents(canvasElem) {
+  if (!canvasElem) return;
 
-  canvas.addEventListener('mousedown', (e) => {
+  canvasElem.addEventListener('mousedown', (e) => {
     if (!loadedImage) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const rect = canvasElem.getBoundingClientRect();
+    const scaleX = canvasElem.width / rect.width;
+    const scaleY = canvasElem.height / rect.height;
     startX = (e.clientX - rect.left) * scaleX;
     startY = (e.clientY - rect.top) * scaleY;
     isDrawing = true;
   });
 
-  canvas.addEventListener('mousemove', (e) => {
+  canvasElem.addEventListener('mousemove', (e) => {
     if (!isDrawing || !loadedImage) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const rect = canvasElem.getBoundingClientRect();
+    const scaleX = canvasElem.width / rect.width;
+    const scaleY = canvasElem.height / rect.height;
     const currentX = (e.clientX - rect.left) * scaleX;
     const currentY = (e.clientY - rect.top) * scaleY;
 
@@ -491,8 +524,8 @@ function setupCanvasEvents() {
     const w = Math.abs(currentX - startX);
     const h = Math.abs(currentY - startY);
 
-    const origScaleX = loadedImage.origWidth / canvas.width;
-    const origScaleY = loadedImage.origHeight / canvas.height;
+    const origScaleX = loadedImage.origWidth / canvasElem.width;
+    const origScaleY = loadedImage.origHeight / canvasElem.height;
     currentRoi = [
       Math.round(x * origScaleX),
       Math.round(y * origScaleY),
@@ -503,8 +536,31 @@ function setupCanvasEvents() {
     redrawCanvas();
   });
 
-  canvas.addEventListener('mouseup', () => { isDrawing = false; });
-  canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+  canvasElem.addEventListener('mouseup', () => { isDrawing = false; });
+  canvasElem.addEventListener('mouseleave', () => { isDrawing = false; });
+}
+
+function setupCanvasEvents() {
+  attachRoiDrawingEvents(canvas);
+  attachRoiDrawingEvents(document.getElementById('roi-canvas-expanded'));
+}
+
+function openExpandedRoiModal() {
+  const modal = document.getElementById('modal-expanded-roi');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  const expCanvas = document.getElementById('roi-canvas-expanded');
+  if (expCanvas && loadedImage) {
+    expCanvas.width = loadedImage.previewWidth;
+    expCanvas.height = loadedImage.previewHeight;
+    redrawCanvas();
+  }
+}
+
+function closeExpandedRoiModal() {
+  const modal = document.getElementById('modal-expanded-roi');
+  if (modal) modal.classList.add('hidden');
+  redrawCanvas();
 }
 
 function clearRoi() {

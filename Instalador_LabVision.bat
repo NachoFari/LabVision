@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 setlocal EnableDelayedExpansion
 title LabVision - Instalador y Configurador Oficial
 color 0B
@@ -13,7 +13,7 @@ echo  ^| ^|    __ _ ^| ^|__ \ \   / (_)___(_) ___  _ __   ^|  _ \ _ __ ___
 echo  ^| ^|   / _` ^|^| '_ \ \ \ / /^| / __^| ^|/ _ \^| '_ \  ^| ^|_) ^| '__/ _ \ 
 echo  ^| ^|__^| (_^| ^|^|^| ^|_) ^| \ V / ^| \__ \ ^| (_) ^| ^| ^| ^| ^|  __/^| ^| ^| (_) ^|
 echo  ^|_____\__,_^|^|^|_.__/   \_/  ^|_^|___/_^|\___/^|_^| ^|_^| ^|_^|   ^|_^|  \___/ 
-echo                                             EDICION PROFESIONAL v0.3
+echo                                             EDICION PROFESIONAL v0.8
 echo        Sistema Inteligente de Captura de Pantallas de Laboratorio
 echo ==============================================================================
 echo.

@@ -20,7 +20,19 @@ class LabVisionEngine:
         self.torch_version = hw_info["torch_version"]
 
         print(f"[LabVision] Inicializando OCR con {self.hardware_desc}...")
-        self.reader = easyocr.Reader(['en'], gpu=self.has_gpu)
+        models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
+        os.makedirs(models_dir, exist_ok=True)
+        has_local_models = (
+            os.path.exists(os.path.join(models_dir, "craft_mlt_25k.pth")) and
+            os.path.exists(os.path.join(models_dir, "english_g2.pth"))
+        )
+        self.reader = easyocr.Reader(
+            ['en'],
+            gpu=self.has_gpu,
+            model_storage_directory=models_dir,
+            download_enabled=not has_local_models,
+            verbose=False
+        )
         print("[LabVision] OCR listo.")
 
     def get_hardware_info(self):

@@ -15,10 +15,33 @@ from config.manager import ConfigManager
 
 class LabVisionAPI:
     def __init__(self):
-        self.config = ConfigManager.load()
-        self.notifier = DiscordNotifier(self.config.get("discord_webhook", ""))
-        self.engine = LabVisionEngine()
-        self.window = None
+        self._config = ConfigManager.load()
+        self._notifier = DiscordNotifier(self._config.get("discord_webhook", ""))
+        self._engine = None
+        self._engine_ready = False
+        self._window = None
+
+        # Estado del procesamiento
+        self.is_processing = False
+        self.cancel_requested = False
+        self.processing_thread = None
+        self.last_all_data_rows = []
+
+        # Inicialización en segundo plano para que la ventana abra al instante (en 1 segundo)
+        threading.Thread(target=self._init_engine_thread, daemon=True).start()
+
+    def _init_engine_thread(self):
+        try:
+            self._engine = LabVisionEngine()
+            self._engine_ready = True
+            print("[LabVision] Motor OCR listo en segundo plano.")
+        except Exception as e:
+            print(f"[LabVision] Error inicializando motor OCR: {e}")
+
+    def _get_engine(self):
+        while not self._engine_ready or self._engine is None:
+            time.sleep(0.05)
+        return self._engine
 
         # Estado del procesamiento
         self.is_processing = False
@@ -42,24 +65,24 @@ class LabVisionAPI:
         }
 
     def set_window(self, window):
-        self.window = window
+        self._window = window
 
     def get_system_info(self):
-        hw = self.engine.get_hardware_info()
+        hw = self._engine.get_hardware_info() if (self._engine_ready and self._engine) else {"has_gpu": False, "description": "Iniciando OCR en segundo plano...", "torch_version": "2.14.0"}
         return {
             "hardware": hw,
-            "config": self.config
+            "config": self._config
         }
 
     def save_settings(self, new_config):
-        self.config.update(new_config)
-        ConfigManager.save(self.config)
+        self._config.update(new_config)
+        ConfigManager.save(self._config)
         if "discord_webhook" in new_config:
-            self.notifier.set_webhook(new_config["discord_webhook"])
+            self._notifier.set_webhook(new_config["discord_webhook"])
         return {"success": True}
 
     def test_discord(self, webhook_url):
-        ok, msg = self.notifier.send_test(webhook_url)
+        ok, msg = self._notifier.send_test(webhook_url)
         return {"success": ok, "message": msg}
 
     def list_cameras(self):
@@ -80,10 +103,10 @@ class LabVisionAPI:
 
     def select_video_dialog(self):
         """Abre un diálogo nativo de Windows para seleccionar video."""
-        if not self.window:
+        if not self._window:
             return None
         file_types = ('Archivos de Video (*.mp4;*.avi;*.mov;*.mkv;*.wmv)', 'Todos los archivos (*.*)')
-        result = self.window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
+        result = self._window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
         if result and len(result) > 0:
             return result[0]
         return None
@@ -122,7 +145,7 @@ class LabVisionAPI:
             frame_preview = frame
 
         # Detectar automáticamente si hay pantalla azul presente (sugerencia de ROI)
-        suggested_box = self.engine.detect_screen_auto(frame, mode="viscometer")
+        suggested_box = self._get_engine().detect_screen_auto(frame, mode="viscometer")
 
         _, buffer = cv2.imencode('.jpg', frame_preview, [cv2.IMWRITE_JPEG_QUALITY, 85])
         jpg_as_text = base64.b64encode(buffer).decode('utf-8')
@@ -159,7 +182,7 @@ class LabVisionAPI:
         if not ret or frame is None:
             return {"error": "No se pudo capturar imagen para calibrar"}
 
-        eval_result = self.engine.calibrate_frame(frame, roi=roi)
+        eval_result = self._get_engine().calibrate_frame(frame, roi=roi)
         return {"success": True, "evaluation": eval_result}
 
     def test_roi_reading(self, source, roi, mode, unit="g", profile="normal", auto_track=False):
@@ -184,7 +207,7 @@ class LabVisionAPI:
         if not ret or frame is None:
             return {"error": "Error al capturar fotograma"}
 
-        parsed, crop = self.engine.process_frame(
+        parsed, crop = self._get_engine().process_frame(
             frame, roi=roi, mode=mode, unit=unit, profile=profile, auto_track=auto_track
         )
         
@@ -253,16 +276,16 @@ class LabVisionAPI:
         src_val = int(source) if is_cam else source
 
         source_name = f"Cámara #{src_val}" if is_cam else os.path.basename(str(source))
-        hw_desc = f"{self.engine.hardware_desc} [Perfil: {profile.upper()}]"
+        hw_desc = f"{self._get_engine().hardware_desc} [Perfil: {profile.upper()}]"
 
-        self.notifier.notify_start(mode, source_name, sample_interval, hw_desc)
+        self._notifier.notify_start(mode, source_name, sample_interval, hw_desc)
 
         cap = cv2.VideoCapture(src_val, cv2.CAP_DSHOW if is_cam and sys.platform == 'win32' else cv2.CAP_ANY)
         if not cap.isOpened():
             self.current_state["is_running"] = False
             self.current_state["error_msg"] = f"No se pudo abrir {source_name}"
             self.is_processing = False
-            self.notifier.notify_error(
+            self._notifier.notify_error(
                 "Dispositivo no disponible",
                 f"No se pudo inicializar la fuente de video ({source_name}). Compruebe la conexión USB o verifique que ninguna otra app esté bloqueando la cámara.",
                 "00:00:00"
@@ -281,7 +304,7 @@ class LabVisionAPI:
         bad_reading_streak = 0
 
         # Preparar archivo CSV en streaming directo para protección total contra apagones
-        output_dir = self.config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
+        output_dir = self._config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
         os.makedirs(output_dir, exist_ok=True)
         timestamp_slug = time.strftime("%Y%m%d_%H%M%S")
         live_csv_path = os.path.join(output_dir, f"Datos_{mode.capitalize()}_{timestamp_slug}.csv")
@@ -307,7 +330,7 @@ class LabVisionAPI:
         self.current_state["last_autosave_time"] = time.strftime("%H:%M:%S")
 
         # Intervalo de auto-guardado en minutos (por defecto 20 minutos = 1200 seg)
-        autosave_interval_sec = float(self.config.get("autosave_interval_min", 20)) * 60.0
+        autosave_interval_sec = float(self._config.get("autosave_interval_min", 20)) * 60.0
 
         try:
             while not self.cancel_requested:
@@ -332,7 +355,7 @@ class LabVisionAPI:
                 ts_str = f"{h:02d}:{m:02d}:{s:02d}"
 
                 # Inferencia con auto-tracking y perfil
-                parsed, crop = self.engine.process_frame(
+                parsed, crop = self._get_engine().process_frame(
                     frame, roi=roi, mode=mode, unit=unit, min_confidence=min_conf, profile=profile, auto_track=auto_track
                 )
 
@@ -380,7 +403,7 @@ class LabVisionAPI:
                     try:
                         checkpoint_slug = time.strftime("%H%M%S")
                         checkpoint_excel = os.path.join(output_dir, f"AutoSave_{mode.capitalize()}_{timestamp_slug}_{checkpoint_slug}.xlsx")
-                        self.engine.export_to_excel(all_data_rows, checkpoint_excel, mode=mode, metadata={"unit": unit})
+                        self._get_engine().export_to_excel(all_data_rows, checkpoint_excel, mode=mode, metadata={"unit": unit})
                         self.current_state["last_autosave_time"] = time.strftime("%H:%M:%S")
                         print(f"[LabVision] Auto-guardado de respaldo completado: {checkpoint_excel}")
                     except Exception as e_save:
@@ -391,7 +414,7 @@ class LabVisionAPI:
                     self.current_state["quality_alert"] = True
                     self.current_state["alert_message"] = parsed["warning"]
                     if bad_reading_streak == 1 or (bad_reading_streak % 5 == 0):
-                        self.notifier.notify_warning(parsed["warning"], ts_str)
+                        self._notifier.notify_warning(parsed["warning"], ts_str)
                 else:
                     bad_reading_streak = 0
                     self.current_state["quality_alert"] = False
@@ -416,7 +439,7 @@ class LabVisionAPI:
             self.current_state["error_msg"] = str(e)
             print(f"[LabVision] Error en loop: {e}")
             try:
-                self.notifier.notify_error(
+                self._notifier.notify_error(
                     "Fallo durante adquisición",
                     str(e),
                     self.current_state.get("current_time_str", "En curso")
@@ -434,13 +457,13 @@ class LabVisionAPI:
         self.last_all_data_rows = all_data_rows
 
         # Exportar automáticamente Excel y CSV
-        output_dir = self.config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
+        output_dir = self._config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
         timestamp_slug = time.strftime("%Y%m%d_%H%M%S")
         excel_path = os.path.join(output_dir, f"Datos_{mode.capitalize()}_{timestamp_slug}.xlsx")
         csv_path = os.path.join(output_dir, f"Datos_{mode.capitalize()}_{timestamp_slug}.csv")
 
         if all_data_rows:
-            self.engine.export_to_excel(all_data_rows, excel_path, mode=mode, metadata={"unit": unit})
+            self._get_engine().export_to_excel(all_data_rows, excel_path, mode=mode, metadata={"unit": unit})
             self.current_state["excel_file"] = excel_path
             self.current_state["csv_file"] = live_csv_path
 
@@ -459,7 +482,7 @@ class LabVisionAPI:
                 stats["unit"] = unit
 
             elapsed = time.time() - start_real_time
-            self.notifier.notify_finish(mode, len(all_data_rows), elapsed, excel_path, stats)
+            self._notifier.notify_finish(mode, len(all_data_rows), elapsed, excel_path, stats)
 
         self.current_state["is_running"] = False
         self.current_state["progress_pct"] = 100
@@ -471,11 +494,11 @@ class LabVisionAPI:
             return {"error": "No hay datos acumulados para exportar"}
 
         rows = self.last_all_data_rows or self.current_state.get("recent_rows", [])
-        output_dir = self.config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
+        output_dir = self._config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
         timestamp_slug = time.strftime("%Y%m%d_%H%M%S")
         csv_path = os.path.join(output_dir, f"Export_{timestamp_slug}.csv")
         
-        self.engine.export_to_csv(rows, csv_path, mode="viscometer")
+        self._get_engine().export_to_csv(rows, csv_path, mode="viscometer")
         return {"success": True, "file_path": csv_path}
 
     def open_browser(self, url="https://github.com/NachoFari"):
@@ -518,7 +541,7 @@ class LabVisionAPI:
         return {"error": "Archivo CSV no encontrado aún"}
 
     def open_folder(self, folder_path=None):
-        target = folder_path or self.config.get("output_dir", os.path.dirname(os.path.abspath(__file__)))
+        target = folder_path or self._config.get("output_dir", os.path.dirname(os.path.abspath(__file__)))
         if os.path.exists(target):
             if sys.platform == 'win32':
                 os.startfile(target)
@@ -527,10 +550,34 @@ class LabVisionAPI:
             return {"success": True}
         return {"error": "Carpeta no encontrada"}
 
+def find_free_port(start_port=23456, max_attempts=100):
+    """Verifica si un puerto está libre. Si está ocupado, busca dinámicamente el siguiente."""
+    import socket
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            continue
+    return None
+
 def start_app():
+    if sys.platform == 'win32':
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('nachofari.labvision.pro.v08')
+        except Exception:
+            pass
+
     api = LabVisionAPI()
-    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(base_dir, "static")
     index_file = os.path.join(static_dir, "index.html")
+    icon_file = os.path.join(base_dir, "labvision.ico")
+    if not os.path.exists(icon_file):
+        icon_file = None
 
     window = webview.create_window(
         title="LabVision • Extractor de Pantallas de Laboratorio",
@@ -543,7 +590,14 @@ def start_app():
         text_select=True
     )
     api.set_window(window)
-    webview.start(gui='edgechromium', debug=False)
+
+    # Detección y salto automático de puerto si el predeterminado está ocupado
+    selected_port = find_free_port(start_port=23456)
+    if selected_port:
+        print(f"[LabVision] Puerto libre asignado dinámicamente: {selected_port}")
+        webview.start(gui='edgechromium', http_port=selected_port, icon=icon_file, debug=False)
+    else:
+        webview.start(gui='edgechromium', icon=icon_file, debug=False)
 
 if __name__ == "__main__":
     start_app()
