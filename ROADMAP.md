@@ -1,7 +1,7 @@
 # 🗺️ Roadmap Técnico: LabVision Universal
 ### *De Digitalizador de Viscosímetro a Plataforma Científica Universal de Digitalización No Invasiva*
 
-Este documento establece la hoja de ruta estratégica, la arquitectura modular, el catálogo de instrumentos de fábrica, la especificación de la extensión `.lvtemplate` y el registro de procedencia técnica/académica de todos los componentes utilizados.
+Este documento establece la hoja de ruta estratégica, la arquitectura modular, el catálogo de instrumentos de fábrica, la especificación de la extensión `.lvtemplate`, el sistema de actualización automática desde GitHub y el registro de procedencia técnica/académica de todos los componentes utilizados.
 
 ---
 
@@ -14,13 +14,14 @@ flowchart TD
         UI_Presets["Selector de Instrumentos de Fábrica"]
         UI_Builder["Constructor Visual de Plantillas (No-Code Sub-ROIs)"]
         UI_Chart["Configurador Dinámico de Gráficos"]
-        UI_Settings["Ajustes de Rendimiento y Multiprocesamiento"]
+        UI_Settings["Ajustes, Rendimiento y Auto-Updater"]
     end
 
     subgraph Core ["Capa de Control y Orquestación (Python API)"]
         API["LabVisionAPI (Gestor de Sesión)"]
         TemplateMgr["TemplateManager (.lvtemplate Import/Export)"]
         AssocHandler["Windows File Association Handler (.lvtemplate)"]
+        AutoUpdater["GitHub Release Updater (Check & Silent Upgrade)"]
         TaskOrch["BatchVideoOrchestrator (Multiprocesamiento)"]
     end
 
@@ -38,6 +39,8 @@ flowchart TD
 
     UI_Presets -->|Selecciona Preset| TemplateMgr
     UI_Builder -->|Crea/Edita .lvtemplate| TemplateMgr
+    UI_Settings -->|Comprueba versión| AutoUpdater
+    AutoUpdater -->|Consulta Releases| GitHubAPI["GitHub REST API (NachoFari/LabVision)"]
     TemplateMgr --> AssocHandler
     TemplateMgr -->|Inyecta Coordenadas| SubRoiCropper
     UI_Main -->|Inicia Video o Cámara| API
@@ -172,7 +175,50 @@ La extensión oficial **`.lvtemplate`** (*LabVision Template Package*) será un 
 
 ---
 
-## 📜 4. Matriz de Trazabilidad de Software y Citas Académicas
+## 🔄 4. Sistema de Notificación y Actualización Automática desde GitHub (Auto-Updater)
+
+Para mantener todas las computadoras del laboratorio actualizadas sin requerir reinstalaciones manuales complejas:
+
+```mermaid
+sequenceDiagram
+    participant UI as Interfaz LabVision
+    participant API as LabVision API (Python)
+    participant GH as GitHub Releases API
+    participant Inst as Instalador Autónomo
+
+    UI->>API: check_for_updates() (Al inicio o clic en Ajustes)
+    API->>GH: GET /repos/NachoFari/LabVision/releases/latest
+    GH-->>API: JSON con tag_name, changelog y asset URL
+    alt Existe nueva versión (ej: v0.9 > v0.8)
+        API-->>UI: { update_available: true, version: "v0.9", changelog: "..." }
+        UI->>UI: Muestra notificación visual (Badge verde / Toast)
+        Note over UI: Usuario pulsa "Actualizar Ahora" en Ajustes
+        UI->>API: download_and_install_update()
+        API->>GH: Descarga LabVision-Setup-v0.9.exe a temp/
+        API->>Inst: Inicia instalador con flag silencioso (/SILENT)
+        API->>UI: Cierra LabVision e inicia versión actualizada
+    else Está en la versión más reciente
+        API-->>UI: { update_available: false, message: "Sistema al día" }
+    end
+```
+
+### Características del Módulo de Actualizaciones:
+1. **Detección Liviana y Asíncrona:**
+   * Al iniciar (en segundo plano y sin bloquear el arranque), consulta el endpoint público de GitHub:
+     `https://api.github.com/repos/NachoFari/LabVision/releases/latest`.
+   * Si detecta una versión superior a la local, muestra una etiqueta no intrusiva en la barra superior:
+     `[ 🎉 Nueva versión v0.9 disponible - Clic para ver ]`.
+2. **Menú de Actualización en Ajustes:**
+   * Pestaña dedicada en la ventana de Ajustes con botón: **"Comprobar actualizaciones ahora"**.
+   * Muestra las notas de versión (*Release Notes / Changelog*) formateadas.
+   * Botón de un solo clic: **"Descargar e Instalar automáticamente"** con barra de progreso.
+3. **Selector de Canal y Privacidad:**
+   * Interruptor para activar/desactivar la búsqueda automática al inicio.
+   * Soporte para entornos de laboratorio cerrados sin internet (si no hay conexión, falla en silencio sin emitir errores molestos).
+
+---
+
+## 📜 5. Matriz de Trazabilidad de Software y Citas Académicas
 *(Software Bill of Materials & Scientific Provenance)*
 
 Para garantizar la integridad científica y cumplir con las normas de **Reproducibilidad y Ética de Revistas Q1** (Elsevier, Nature, IEEE), cada componente externo queda rigurosamente documentado con su origen, versión, licencia y cita bibliográfica oficial:
@@ -205,12 +251,12 @@ Para garantizar la integridad científica y cumplir con las normas de **Reproduc
 
 ---
 
-## 📋 5. Fases de Desarrollo Actualizadas
+## 📋 6. Fases de Desarrollo Actualizadas
 
 | Versión | Alcance Técnico | Entregables Clave |
 | :---: | :--- | :--- |
 | **v0.8** *(Actual)* | Estabilidad, rutas relativas, instalador `.exe` de 87 MB | `LabVision-Setup-v0.8.exe` con Viscosímetro y Balanza |
-| **v0.9** | Formato `.lvtemplate` + 6 Presets de fábrica | Registro en Windows de `.lvtemplate` y biblioteca de 6 equipos |
+| **v0.9** | Formato `.lvtemplate` + 6 Presets + Auto-Updater | Registro de `.lvtemplate`, biblioteca de 6 equipos y actualizador desde GitHub |
 | **v1.0** | Constructor Visual No-Code en la UI | Dibujo interactivo multi-caja en pantalla con test en vivo |
 | **v1.1** | Presets de pantalla física (LCD, LED 7-seg, VFD) | Pipelines OpenCV automáticos según tecnología del display |
 | **v1.2** | Multiprocesamiento paralelo de video y filtro delta | Aceleración $5\times$ a $10\times$ en el procesamiento de videos |
