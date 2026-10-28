@@ -147,6 +147,7 @@ Creado con dedicación por **NachoFari**.
 
 ---
 
-## 📄 Licencia
+## 🔒 Derechos de Autor y Propiedad
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo para más detalles.
+© 2026 **NachoFari**. Todos los derechos reservados.  
+Software propietario desarrollado para adquisición de datos científicos y automatización de laboratorio. Prohibida su copia, redistribución o uso comercial no autorizado sin el consentimiento expreso del autor.
