@@ -41,6 +41,7 @@ config.json
 # Archivos del Sistema Operativo
 Thumbs.db
 Desktop.ini
+*.lnk
 $RECYCLE.BIN/
 .DS_Store
 

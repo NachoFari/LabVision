@@ -217,6 +217,20 @@
     <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN Y VISOR DE RECORTE -->
     <div id="col-left" class="col-span-5 flex flex-col space-y-3 h-full min-h-0 overflow-hidden">
 
+      <!-- AVISO DE CONTROLES BLOQUEADOS DURANTE LA ADQUISICIÓN -->
+      <div id="lock-status-badge" class="hidden bg-amber-950/80 border border-amber-600/70 rounded-xl px-3 py-2 text-amber-200 text-xs flex items-center justify-between lock-badge-pulse shadow-sm">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
+            <rect x="5" y="2" width="6" height="5"/>
+            <rect x="6" y="3" width="4" height="4" fill="#0f172a"/>
+            <rect x="3" y="7" width="10" height="7"/>
+            <rect x="7" y="9" width="2" height="3" fill="#0f172a"/>
+          </svg>
+          <span class="font-semibold text-[11px]">Controles bloqueados mientras se capturan datos</span>
+        </div>
+        <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-900 text-amber-300 font-bold border border-amber-700">En Curso</span>
+      </div>
+
       <!-- PESTAÑAS DE INSTRUMENTO -->
       <div class="bg-lab-card border border-lab-border rounded-xl p-1.5 flex space-x-1.5 shadow-sm">
         <button id="tab-viscometer" onclick="switchMode('viscometer')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm">

@@ -622,6 +622,60 @@ async function runCameraCalibration() {
   }
 }
 
+// ================= BLOQUEO DE CONTROLES DURANTE EXTRACCIÓN =================
+function setExtractionControlsLocked(locked) {
+  const colLeft = document.getElementById('col-left');
+  if (colLeft) {
+    if (locked) colLeft.classList.add('controls-locked');
+    else colLeft.classList.remove('controls-locked');
+  }
+
+  const badge = document.getElementById('lock-status-badge');
+  if (badge) {
+    if (locked) badge.classList.remove('hidden');
+    else badge.classList.add('hidden');
+  }
+
+  // Deshabilitar selectores y botones de configuración para evitar colisiones
+  const idsToDisable = [
+    'tab-viscometer',
+    'tab-balance',
+    'btn-src-video',
+    'btn-src-camera',
+    'camera-select',
+    'prof-low',
+    'prof-normal',
+    'prof-high',
+    'sample-interval',
+    'balance-unit',
+    'chk-auto-track',
+    'btn-test-frame',
+    'nav-btn-calibration'
+  ];
+
+  idsToDisable.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = locked;
+  });
+
+  // Deshabilitar botones secundarios dentro de la columna izquierda (selección video, refrescar, etc.)
+  if (colLeft) {
+    const leftButtons = colLeft.querySelectorAll('button');
+    leftButtons.forEach(btn => {
+      if (btn.id !== 'btn-start' && btn.id !== 'btn-stop') {
+        btn.disabled = locked;
+      }
+    });
+  }
+
+  // Bloquear canvas ROI para impedir que el usuario altere el encuadre en plena corrida
+  const roiCanvas = document.getElementById('roi-canvas');
+  if (roiCanvas) {
+    roiCanvas.style.pointerEvents = locked ? 'none' : 'auto';
+    roiCanvas.style.cursor = locked ? 'not-allowed' : 'crosshair';
+  }
+}
+
 // ================= INICIAR Y DETENER EXTRACCIÓN =================
 async function startExtraction() {
   if (window.labAudio && window.labAudio.resume) {
@@ -651,8 +705,12 @@ async function startExtraction() {
   const res = await window.pywebview.api.start_processing(options);
   if (res.error) {
     alert("Error al iniciar: " + res.error);
+    setExtractionControlsLocked(false);
     return;
   }
+
+  // Bloquear todos los controles de configuración de inmediato
+  setExtractionControlsLocked(true);
 
   document.getElementById('btn-start').disabled = true;
   document.getElementById('btn-start').classList.add('opacity-40');
@@ -675,6 +733,7 @@ async function stopExtraction() {
   if (!window.pywebview) return;
   await window.pywebview.api.stop_processing();
   document.getElementById('btn-stop').disabled = true;
+  setExtractionControlsLocked(false);
 }
 
 // ================= SONDEO DE ESTADO EN VIVO =================
@@ -796,18 +855,26 @@ async function updateLiveStatus() {
       });
     }
 
-    if (!state.is_running && state.progress_pct >= 100) {
-      clearInterval(pollInterval);
+    if (!state.is_running) {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+      setExtractionControlsLocked(false);
       document.getElementById('btn-start').disabled = false;
       document.getElementById('btn-start').classList.remove('opacity-40');
       document.getElementById('btn-stop').disabled = true;
-      document.getElementById('btn-open-excel').disabled = false;
-      document.getElementById('btn-open-csv').disabled = false;
+      document.getElementById('btn-open-excel').disabled = !state.excel_file;
+      document.getElementById('btn-open-csv').disabled = !state.csv_file;
       alertBanner.classList.add('hidden');
     }
 
     if (state.error_msg) {
-      clearInterval(pollInterval);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+      setExtractionControlsLocked(false);
       alert("Error: " + state.error_msg);
       document.getElementById('btn-start').disabled = false;
       document.getElementById('btn-start').classList.remove('opacity-40');

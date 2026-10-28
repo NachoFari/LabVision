@@ -64,6 +64,8 @@ class LabVisionAPI:
 
     def list_cameras(self):
         """Busca cámaras web o capturadoras USB conectadas (índices 0, 1, 2)."""
+        if self.is_processing:
+            return [{"index": 0, "name": "Cámara activa en extracción"}]
         available = []
         for i in range(3):
             cap = cv2.VideoCapture(i, cv2.CAP_DSHOW if sys.platform == 'win32' else cv2.CAP_ANY)
@@ -91,6 +93,9 @@ class LabVisionAPI:
         Extrae un fotograma del video o de la cámara para que el usuario
         pueda dibujar el recuadro (ROI) en el canvas.
         """
+        if self.is_processing:
+            return {"error": "Extracción en curso. No se puede capturar otro fotograma simultáneamente."}
+
         is_cam = isinstance(source, int) or str(source).isdigit()
         src_val = int(source) if is_cam else source
 
@@ -134,6 +139,9 @@ class LabVisionAPI:
 
     def calibrate_camera(self, source, roi=None):
         """Ejecuta diagnóstico de nitidez, enfoque y reflejos en la cámara."""
+        if self.is_processing:
+            return {"error": "Extracción en curso. No se puede ejecutar calibración simultáneamente."}
+
         is_cam = isinstance(source, int) or str(source).isdigit()
         src_val = int(source) if is_cam else source
 
@@ -156,6 +164,9 @@ class LabVisionAPI:
 
     def test_roi_reading(self, source, roi, mode, unit="g", profile="normal", auto_track=False):
         """Ejecuta una prueba instantánea sobre el recuadro seleccionado."""
+        if self.is_processing:
+            return {"error": "Extracción en curso. No se puede probar encuadre simultáneamente."}
+
         is_cam = isinstance(source, int) or str(source).isdigit()
         src_val = int(source) if is_cam else source
 
@@ -251,6 +262,11 @@ class LabVisionAPI:
             self.current_state["is_running"] = False
             self.current_state["error_msg"] = f"No se pudo abrir {source_name}"
             self.is_processing = False
+            self.notifier.notify_error(
+                "Dispositivo no disponible",
+                f"No se pudo inicializar la fuente de video ({source_name}). Compruebe la conexión USB o verifique que ninguna otra app esté bloqueando la cámara.",
+                "00:00:00"
+            )
             return
 
         fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
@@ -374,7 +390,7 @@ class LabVisionAPI:
                     bad_reading_streak += 1
                     self.current_state["quality_alert"] = True
                     self.current_state["alert_message"] = parsed["warning"]
-                    if bad_reading_streak >= 3:
+                    if bad_reading_streak == 1 or (bad_reading_streak % 5 == 0):
                         self.notifier.notify_warning(parsed["warning"], ts_str)
                 else:
                     bad_reading_streak = 0
@@ -391,11 +407,22 @@ class LabVisionAPI:
                 if not is_cam:
                     frame_idx += frame_step
                 else:
-                    time.sleep(sample_interval)
+                    # Espera granular en cámara de 50ms para responder de inmediato al botón Detener
+                    sleep_until = time.time() + sample_interval
+                    while time.time() < sleep_until and not self.cancel_requested:
+                        time.sleep(0.05)
 
         except Exception as e:
             self.current_state["error_msg"] = str(e)
             print(f"[LabVision] Error en loop: {e}")
+            try:
+                self.notifier.notify_error(
+                    "Fallo durante adquisición",
+                    str(e),
+                    self.current_state.get("current_time_str", "En curso")
+                )
+            except Exception as e_notify:
+                print(f"[LabVision] Error enviando alerta a Discord: {e_notify}")
         finally:
             cap.release()
             try:

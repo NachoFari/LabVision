@@ -1,37 +1,39 @@
 import requests
 import datetime
 import time
+import os
 
 class DiscordNotifier:
     """Envía notificaciones enriquecidas (Embeds) a canales de Discord vía Webhooks."""
     def __init__(self, webhook_url=None):
         self.webhook_url = webhook_url.strip() if webhook_url else ""
         self.last_warning_time = 0
-        self.warning_cooldown = 15  # segundos entre avisos para evitar spam
+        self.warning_cooldown = 8  # segundos entre avisos para evitar saturación de Discord
 
     def set_webhook(self, url):
         self.webhook_url = url.strip() if url else ""
 
     def is_configured(self):
-        return bool(self.webhook_url and self.webhook_url.startswith("https://discord.com/api/webhooks/"))
+        u = (self.webhook_url or "").strip().lower()
+        return bool(u and ("discord.com/api/webhooks/" in u or "discordapp.com/api/webhooks/" in u))
 
     def send_test(self, url=None):
-        target_url = url or self.webhook_url
+        target_url = (url or self.webhook_url or "").strip()
         if not target_url:
             return False, "URL de webhook no proporcionada"
         
         payload = {
-            "username": "LabVision Pro (NachoFari)",
-            "avatar_url": "https://cdn-icons-png.flaticon.com/512/3067/3067260.png",
+            "username": "LabVision (NachoFari)",
+            "avatar_url": "https://raw.githubusercontent.com/NachoFari/LabVision/main/static/lab_badge_256.png",
             "embeds": [{
-                "title": "🧪 Conexión Exitosa con LabVision Pro",
+                "title": "🧪 Conexión Exitosa con LabVision",
                 "description": "El sistema de notificaciones está correctamente vinculado y listo para enviar alertas de laboratorio.",
                 "color": 3066993,
                 "fields": [
                     {"name": "Estado", "value": "🟢 Operativo", "inline": True},
                     {"name": "Autor", "value": "NachoFari", "inline": True}
                 ],
-                "footer": {"text": "LabVision Pro • Automatización de Laboratorio"},
+                "footer": {"text": "LabVision v0.3 • Automatización de Laboratorio"},
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
             }]
         }
@@ -56,15 +58,16 @@ class DiscordNotifier:
                 {"name": "Muestreo", "value": f"⏱️ Cada {sample_interval}s", "inline": True},
                 {"name": "Aceleración", "value": f"⚙️ {hardware_mode}", "inline": True}
             ],
-            "footer": {"text": "LabVision Pro • Creado por NachoFari"},
+            "footer": {"text": "LabVision • Creado por NachoFari"},
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
         try:
-            requests.post(self.webhook_url, json={"username": "LabVision Pro", "embeds": [embed]}, timeout=5)
+            requests.post(self.webhook_url, json={"username": "LabVision", "embeds": [embed]}, timeout=5)
         except Exception as e:
             print(f"[Discord] Error notificando inicio: {e}")
 
     def notify_warning(self, message, current_time_str=""):
+        """Envía alerta amarilla ante lecturas dudosas o baja confianza del OCR."""
         if not self.is_configured():
             return
         
@@ -76,18 +79,40 @@ class DiscordNotifier:
         embed = {
             "title": "⚠️ Alerta de Calidad de Lectura",
             "description": f"Se detectaron lecturas de baja confianza o pantalla obstruida.\n**Detalle:** {message}",
-            "color": 15105570,
+            "color": 15105570,  # Ámbar / Naranja
             "fields": [
                 {"name": "Tiempo Video", "value": current_time_str or "En curso", "inline": True},
-                {"name": "Recomendación", "value": "Verificar encuadre, iluminación o reflejos.", "inline": False}
+                {"name": "Recomendación", "value": "Verificar encuadre, iluminación o vibración.", "inline": False}
             ],
             "footer": {"text": "LabVision Alertas • Creado por NachoFari"},
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
         try:
-            requests.post(self.webhook_url, json={"username": "LabVision Pro", "embeds": [embed]}, timeout=5)
+            requests.post(self.webhook_url, json={"username": "LabVision Alertas", "embeds": [embed]}, timeout=5)
         except Exception as e:
             print(f"[Discord] Error notificando advertencia: {e}")
+
+    def notify_error(self, error_title, error_detail, current_time_str=""):
+        """Envía alerta roja urgente ante errores críticos o caídas de cámara."""
+        if not self.is_configured():
+            return
+
+        detail_text = str(error_detail)[:1200]
+        embed = {
+            "title": f"🚨 Error en Adquisición de Datos: {error_title}",
+            "description": f"Ocurrió una falla durante el proceso de adquisición:\n```{detail_text}```",
+            "color": 15158332,  # Rojo intenso
+            "fields": [
+                {"name": "Momento del Fallo", "value": current_time_str or "Al iniciar o conectar", "inline": True},
+                {"name": "Acción Sugerida", "value": "Compruebe la conexión USB de la cámara o el formato del archivo.", "inline": False}
+            ],
+            "footer": {"text": "LabVision Alertas Críticas • Creado por NachoFari"},
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        try:
+            requests.post(self.webhook_url, json={"username": "LabVision Alertas", "embeds": [embed]}, timeout=6)
+        except Exception as e:
+            print(f"[Discord] Error notificando error crítico: {e}")
 
     def notify_finish(self, mode_name, total_rows, duration_sec, excel_path, stats=None):
         if not self.is_configured():
@@ -110,13 +135,13 @@ class DiscordNotifier:
 
         embed = {
             "title": f"✅ Procesamiento Finalizado: {mode_name.upper()}",
-            "description": "Se completó la extracción de datos con éxito y la tabla Excel ha sido generada.",
-            "color": 5763719,
+            "description": "Se completó la extracción de datos con éxito y la planilla Excel ha sido generada.",
+            "color": 5763719,  # Verde
             "fields": fields,
-            "footer": {"text": "LabVision Pro • Creado por NachoFari"},
+            "footer": {"text": "LabVision • Creado por NachoFari"},
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
         try:
-            requests.post(self.webhook_url, json={"username": "LabVision Pro", "embeds": [embed]}, timeout=8)
+            requests.post(self.webhook_url, json={"username": "LabVision", "embeds": [embed]}, timeout=8)
         except Exception as e:
             print(f"[Discord] Error notificando finalización: {e}")

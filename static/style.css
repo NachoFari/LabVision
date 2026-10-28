@@ -171,3 +171,24 @@ svg[style*="crispEdges"], .pixel-art {
 .theme-transition {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
+
+/* ================= BLOQUEO DE CONTROLES EN ADQUISICIÓN ================= */
+.controls-locked select:disabled,
+.controls-locked input:disabled,
+.controls-locked button:disabled,
+.controls-locked .lock-disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(40%);
+}
+
+.lock-badge-pulse {
+  animation: lockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes lockPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
