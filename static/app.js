@@ -271,14 +271,26 @@ function switchScreen(screenName) {
   if (screenName === 'chart') {
 
     if (typeof window.initLiveChart === 'function') {
-
       window.initLiveChart('live-chart-canvas', currentMode);
+      populateChartAxes();
+      changeChartAxes();
+    }
 
+  } else if (screenName === 'history') {
+
+    const bCount = document.getElementById('badge-history-count');
+    if (bCount) bCount.innerText = (typeof allStoredRows !== 'undefined' && allStoredRows) ? allStoredRows.length : 0;
+    if (typeof refreshSavedSessionsList === 'function') {
+      refreshSavedSessionsList();
     }
 
   } else if (screenName === 'calibration') {
 
-    runCameraCalibration();
+    if (typeof refreshCalibCameras === 'function') {
+      refreshCalibCameras();
+    } else {
+      runCameraCalibration();
+    }
 
   }
 
@@ -1266,7 +1278,11 @@ async function testCurrentRoi() {
 
 async function runCameraCalibration() {
 
-  if (!window.pywebview || !currentSource) return;
+  if (!window.pywebview) return;
+  if (currentSource === null || currentSource === undefined) {
+    currentSource = 0;
+    sourceType = 'camera';
+  }
 
 
 
@@ -1350,6 +1366,15 @@ async function runCameraCalibration() {
 
         lBadge.className = ev.lum_status === 'ok' ? 'px-2.5 py-1 rounded text-xs font-bold bg-emerald-900 text-emerald-300' : 'px-2.5 py-1 rounded text-xs font-bold bg-rose-900 text-rose-300';
 
+      }
+
+      // Proyectar fotograma real de la cámara en el visor óptico derecho
+      const prevImg = document.getElementById('calib-preview-img');
+      const emptyState = document.getElementById('calib-empty-state');
+      if (res.preview_image && prevImg) {
+        prevImg.src = res.preview_image;
+        prevImg.classList.remove('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
       }
 
     }
@@ -2721,47 +2746,417 @@ function generateAndDownloadCsvInBrowser(selectedCols) {
 
 // ================= DEEP LINKING Y TESTING =================
 
-window.addEventListener('DOMContentLoaded', () => {
+function handleInitialDeepNavigation() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const screenParam = urlParams.get('screen') || urlParams.get('tab');
+  const modalParam = urlParams.get('modal');
+  const hash = window.location.hash;
 
-  setTimeout(() => {
+  if (modalParam === 'settings' || hash === '#settings') openSettingsModal();
+  else if (modalParam === 'themes' || hash === '#themes') openThemesModal();
+  else if (modalParam === 'builder' || hash === '#builder') openTemplateBuilder();
+  else if (modalParam === 'tutorial' || hash === '#tutorial') openTutorialModal();
+  else if (modalParam === 'discord' || hash === '#discord') openDiscordModal();
+  else if (screenParam === 'history-saved' || hash === '#history-saved') {
+    switchScreen('history');
+    switchHistoryTab('saved');
+  }
+  else if (screenParam === 'history' || hash === '#history') switchScreen('history');
+  else if (screenParam === 'chart' || hash === '#chart') switchScreen('chart');
+  else if (screenParam === 'calibration' || hash === '#calibration') switchScreen('calibration');
+  else if (modalParam === 'dialog' || hash === '#dialog') {
+    showLabConfirm({
+      title: '¿Eliminar todos los Sub-ROIs?',
+      message: '¿Estás seguro de que deseas eliminar todas las variables y regiones creadas en esta plantilla? Esta acción no se puede deshacer.',
+      confirmText: 'Sí, eliminar todo',
+      cancelText: 'Cancelar',
+      danger: true
+    });
+  }
 
-    const hash = window.location.hash;
+  if (window.location.search.includes('theme=light')) applyTheme('theme-light');
+  else if (window.location.search.includes('theme=oled')) applyTheme('theme-oled');
+  else if (window.location.search.includes('theme=sepia')) applyTheme('theme-sepia');
+}
 
-    if (hash === '#settings') openSettingsModal();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', handleInitialDeepNavigation);
+} else {
+  handleInitialDeepNavigation();
+}
 
-    else if (hash === '#chart') switchScreen('chart');
+// ================= SELECTORES DE EJES X e Y PARA GRÁFICO EN VIVO =================
 
-    else if (hash === '#history') switchScreen('history');
+let selectedChartAxisX = 'time_sec';
+let selectedChartAxisY = 'viscosity_mpa';
+let selectedChartType = 'line';
 
-    else if (hash === '#calibration') switchScreen('calibration');
+function populateChartAxes() {
+  const selX = document.getElementById('chart-select-x');
+  const selY = document.getElementById('chart-select-y');
+  if (!selX || !selY) return;
 
-    else if (hash === '#tutorial') openTutorialModal();
+  const currentX = selX.value || 'time_sec';
+  const currentY = selY.value || (currentMode === 'viscometer' ? 'viscosity_mpa' : 'weight');
 
-    else if (hash === '#discord') openDiscordModal();
-    else if (hash === '#settings') openSettingsModal();
-    else if (hash === '#themes') openThemesModal();
-    else if (hash === '#builder') openTemplateBuilder();
-    else if (hash === '#dialog') {
-      showLabConfirm({
-        title: '¿Eliminar todos los Sub-ROIs?',
-        message: '¿Estás seguro de que deseas eliminar todas las variables y regiones creadas en esta plantilla? Esta acción no se puede deshacer.',
-        confirmText: 'Sí, eliminar todo',
-        cancelText: 'Cancelar',
-        danger: true
-      });
+  selX.innerHTML = `
+    <option value="time_sec">Tiempo (s)</option>
+    <option value="timestamp">Timestamp (Hora)</option>
+    <option value="index">N° de Muestra</option>
+  `;
+
+  if (activeCustomTemplate && activeCustomTemplate.subRois && activeCustomTemplate.subRois.length > 0) {
+    selY.innerHTML = '';
+    activeCustomTemplate.subRois.forEach(roi => {
+      const opt = document.createElement('option');
+      opt.value = roi.name || roi.id;
+      opt.innerText = `${roi.name || roi.id} (${roi.unit || ''})`;
+      selY.appendChild(opt);
+    });
+  } else if (currentMode === 'viscometer') {
+    selY.innerHTML = `
+      <option value="viscosity_mpa">Viscosidad (mPa·s)</option>
+      <option value="torque_pct">Torque (%)</option>
+      <option value="speed_rpm">Velocidad (RPM)</option>
+      <option value="spindle">Rotor (#)</option>
+    `;
+  } else {
+    selY.innerHTML = `
+      <option value="weight">Peso / Masa (g)</option>
+      <option value="confidence">Confianza OCR (%)</option>
+    `;
+  }
+
+  if ([...selX.options].some(o => o.value === currentX)) selX.value = currentX;
+  if ([...selY.options].some(o => o.value === currentY)) selY.value = currentY;
+
+  selectedChartAxisX = selX.value;
+  selectedChartAxisY = selY.value;
+}
+
+function changeChartAxes() {
+  const selX = document.getElementById('chart-select-x');
+  const selY = document.getElementById('chart-select-y');
+  if (selX) selectedChartAxisX = selX.value;
+  if (selY) selectedChartAxisY = selY.value;
+
+  const rows = (typeof allStoredRows !== 'undefined' && allStoredRows.length > 0) ? allStoredRows : [];
+  if (!rows || rows.length === 0) return;
+
+  const labels = [];
+  const values = [];
+  const isBadArr = [];
+
+  rows.forEach((r, idx) => {
+    let xVal = idx;
+    if (selectedChartAxisX === 'time_sec') xVal = typeof r.time_sec === 'number' ? `${Math.round(r.time_sec)}s` : `${idx}s`;
+    else if (selectedChartAxisX === 'timestamp') xVal = r.timestamp || `${idx}`;
+    else xVal = `#${idx + 1}`;
+
+    let yVal = r[selectedChartAxisY];
+    if (yVal === undefined && currentMode === 'viscometer' && selectedChartAxisY === 'viscosity_mpa') yVal = r.viscosity_mpa;
+    if (yVal === undefined && currentMode === 'balance' && selectedChartAxisY === 'weight') yVal = r.weight;
+
+    const numY = parseFloat(yVal);
+    if (!isNaN(numY)) {
+      labels.push(xVal);
+      values.push(numY);
+      isBadArr.push(Boolean(r.is_bad));
+    }
+  });
+
+  const yLabelText = selY ? selY.options[selY.selectedIndex].text : selectedChartAxisY;
+  if (typeof window.setChartSeries === 'function') {
+    window.setChartSeries(labels, values, isBadArr, yLabelText);
+  }
+
+  if (values.length > 0) {
+    const last = values[values.length - 1];
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+
+    const sLast = document.getElementById('stat-chart-last');
+    const sMin = document.getElementById('stat-chart-min');
+    const sMax = document.getElementById('stat-chart-max');
+    const sAvg = document.getElementById('stat-chart-avg');
+
+    if (sLast) sLast.innerText = last.toFixed(2);
+    if (sMin) sMin.innerText = min.toFixed(2);
+    if (sMax) sMax.innerText = max.toFixed(2);
+    if (sAvg) sAvg.innerText = avg.toFixed(2);
+  }
+}
+
+function changeChartType(type) {
+  selectedChartType = type;
+  if (typeof window.setChartFillType === 'function') {
+    window.setChartFillType(type);
+  }
+}
+
+
+// ================= HISTORIAL Y "MIS DATOS" (ARCHIVOS PREVIOS) =================
+
+let currentHistoryTab = 'current';
+let loadedSessionFile = null;
+
+function switchHistoryTab(tab) {
+  currentHistoryTab = tab;
+  const btnCurr = document.getElementById('tab-history-current');
+  const btnSaved = document.getElementById('tab-history-saved');
+  const viewCurr = document.getElementById('history-table-container');
+  const viewSaved = document.getElementById('history-saved-container');
+  const filterBox = document.getElementById('history-filter-box');
+
+  if (tab === 'saved') {
+    if (btnSaved) {
+      btnSaved.className = "px-3 py-1.5 rounded-lg font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center space-x-1.5";
+    }
+    if (btnCurr) {
+      btnCurr.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all flex items-center space-x-1.5";
+    }
+    if (viewCurr) viewCurr.classList.add('hidden');
+    if (viewSaved) viewSaved.classList.remove('hidden');
+    if (filterBox) filterBox.classList.add('hidden');
+    refreshSavedSessionsList();
+  } else {
+    if (btnCurr) {
+      btnCurr.className = "px-3 py-1.5 rounded-lg font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center space-x-1.5";
+    }
+    if (btnSaved) {
+      btnSaved.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition-all flex items-center space-x-1.5";
+    }
+    if (viewCurr) viewCurr.classList.remove('hidden');
+    if (viewSaved) viewSaved.classList.add('hidden');
+    if (filterBox) filterBox.classList.remove('hidden');
+  }
+}
+
+async function refreshSavedSessionsList() {
+  const tbody = document.getElementById('saved-sessions-table-body');
+  const badgeCount = document.getElementById('badge-saved-files-count');
+  if (!tbody) return;
+
+  if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.list_saved_sessions) {
+    if (badgeCount) badgeCount.innerText = '8';
+    tbody.innerHTML = `
+      <tr class="hover:bg-slate-800/40 transition-colors text-xs">
+        <td class="py-2.5 px-4 font-semibold text-white flex items-center space-x-2">
+          <span>📄</span><span class="truncate max-w-[260px]">Datos_Viscometer_20261028_105131.csv</span>
+        </td>
+        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono text-[10px]">CSV</span></td>
+        <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">2026-10-28 10:51:31</td>
+        <td class="py-2.5 px-4 text-center font-mono text-cyan-300">42 filas</td>
+        <td class="py-2.5 px-4 text-center text-slate-400 font-mono text-[11px]">3.4 KB</td>
+        <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+          <button class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-800 text-cyan-300 font-semibold text-[11px]">👁️ Ver Datos</button>
+          <button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-semibold">📂 Abrir</button>
+        </td>
+      </tr>
+      <tr class="hover:bg-slate-800/40 transition-colors text-xs">
+        <td class="py-2.5 px-4 font-semibold text-white flex items-center space-x-2">
+          <span>📊</span><span class="truncate max-w-[260px]">Datos_Viscometer_20261028_105131.xlsx</span>
+        </td>
+        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono text-[10px]">Excel</span></td>
+        <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">2026-10-28 10:51:33</td>
+        <td class="py-2.5 px-4 text-center font-mono text-cyan-300">42 filas</td>
+        <td class="py-2.5 px-4 text-center text-slate-400 font-mono text-[11px]">11.8 KB</td>
+        <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+          <button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-semibold">📂 Abrir</button>
+        </td>
+      </tr>
+      <tr class="hover:bg-slate-800/40 transition-colors text-xs">
+        <td class="py-2.5 px-4 font-semibold text-white flex items-center space-x-2">
+          <span>📄</span><span class="truncate max-w-[260px]">Datos_Balanza_20261028_091215.csv</span>
+        </td>
+        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono text-[10px]">CSV</span></td>
+        <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">2026-10-28 09:12:15</td>
+        <td class="py-2.5 px-4 text-center font-mono text-cyan-300">120 filas</td>
+        <td class="py-2.5 px-4 text-center text-slate-400 font-mono text-[11px]">8.2 KB</td>
+        <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+          <button class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-800 text-cyan-300 font-semibold text-[11px]">👁️ Ver Datos</button>
+          <button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-semibold">📂 Abrir</button>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  try {
+    const list = await window.pywebview.api.list_saved_sessions();
+    if (badgeCount) badgeCount.innerText = list ? list.length : 0;
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-500 italic">No hay archivos exportados anteriormente en la carpeta output.</td></tr>`;
+      return;
     }
 
+    tbody.innerHTML = '';
+    list.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-800/40 transition-colors text-xs";
+      const icon = item.type === 'csv' ? '📄' : '📊';
+      const badgeFormat = item.type === 'csv' 
+        ? '<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono text-[10px]">CSV</span>' 
+        : '<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono text-[10px]">Excel</span>';
+      
+      const rowsDisplay = item.rows_count !== null ? `${item.rows_count} filas` : '--';
+      const safePath = item.filepath.replace(/\\/g, '/');
+
+      tr.innerHTML = `
+        <td class="py-2.5 px-4 font-semibold text-white flex items-center space-x-2">
+          <span>${icon}</span>
+          <span class="truncate max-w-[260px]" title="${item.filename}">${item.filename}</span>
+        </td>
+        <td class="py-2.5 px-4">${badgeFormat}</td>
+        <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">${item.modified}</td>
+        <td class="py-2.5 px-4 text-center font-mono text-cyan-300">${rowsDisplay}</td>
+        <td class="py-2.5 px-4 text-center text-slate-400 font-mono text-[11px]">${item.size_kb} KB</td>
+        <td class="py-2.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+          ${item.type === 'csv' ? `<button onclick="loadSessionFileToView('${safePath}')" class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-800 text-cyan-300 font-semibold text-[11px] transition-colors cursor-pointer" title="Visualizar datos en la tabla">👁️ Ver Datos</button>` : ''}
+          <button onclick="openExternalSessionFile('${safePath}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-semibold transition-colors cursor-pointer" title="Abrir en programa del sistema">📂 Abrir</button>
+          <button onclick="deleteSessionFilePrompt('${safePath}', '${item.filename}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-950 border border-slate-700 hover:border-rose-800 text-slate-400 hover:text-rose-300 text-[11px] transition-colors cursor-pointer" title="Eliminar archivo">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('[History] Error listando sesiones guardadas:', err);
+  }
+}
+
+async function loadSessionFileToView(filepath) {
+  if (!window.pywebview || !window.pywebview.api || !window.pywebview.api.load_saved_session_data) return;
+  try {
+    const res = await window.pywebview.api.load_saved_session_data(filepath);
+    if (!res.success) {
+      if (typeof showLabToast === 'function') showLabToast(res.error || 'No se pudo cargar el archivo', 'error');
+      return;
+    }
+
+    loadedSessionFile = res;
+
+    // Renderizar cabeceras
+    const theadTr = document.getElementById('history-table-headers');
+    if (theadTr && res.headers) {
+      theadTr.innerHTML = res.headers.map(h => `<th class="py-2.5 px-4">${h}</th>`).join('');
+    }
+
+    // Renderizar filas
+    const tbody = document.getElementById('history-table-body');
+    if (tbody && res.rows) {
+      tbody.innerHTML = res.rows.map(row => {
+        return `<tr class="hover:bg-slate-800/40 transition-colors">${row.map(c => `<td class="py-2 px-4">${c}</td>`).join('')}</tr>`;
+      }).join('');
+    }
+
+    // Mostrar banner de archivo cargado
+    const banner = document.getElementById('history-file-loaded-banner');
+    const nameEl = document.getElementById('history-loaded-filename');
+    const rowsEl = document.getElementById('history-loaded-rows');
+    if (nameEl) nameEl.innerText = res.filename;
+    if (rowsEl) rowsEl.innerText = res.total_rows;
+    if (banner) banner.classList.remove('hidden');
+
+    // Cambiar a la vista de tabla
+    switchHistoryTab('current');
+    if (typeof showLabToast === 'function') showLabToast(`Datos cargados: ${res.filename} (${res.total_rows} filas)`, 'success');
+  } catch (e) {
+    console.error('Error cargando archivo:', e);
+  }
+}
+
+function returnToLiveHistory() {
+  const banner = document.getElementById('history-file-loaded-banner');
+  if (banner) banner.classList.add('hidden');
+  loadedSessionFile = null;
+  // Re-renderizar filas de la sesión actual
+  if (typeof filterHistory === 'function') filterHistory('all');
+}
+
+async function openExternalSessionFile(filepath) {
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.open_csv) {
+    await window.pywebview.api.open_csv(filepath);
+  }
+}
+
+async function deleteSessionFilePrompt(filepath, filename) {
+  let ok = false;
+  if (typeof showLabConfirm === 'function') {
+    ok = await showLabConfirm({
+      title: '¿Eliminar archivo guardado?',
+      message: `¿Estás seguro de que deseas eliminar permanentemente el archivo "${filename}"? Esta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      danger: true
+    });
+  } else {
+    ok = confirm(`¿Eliminar ${filename}?`);
+  }
+
+  if (ok && window.pywebview && window.pywebview.api && window.pywebview.api.delete_saved_session) {
+    const res = await window.pywebview.api.delete_saved_session(filepath);
+    if (res.success) {
+      if (typeof showLabToast === 'function') showLabToast(`Archivo ${filename} eliminado.`, 'info');
+      refreshSavedSessionsList();
+    } else {
+      if (typeof showLabToast === 'function') showLabToast(`Error: ${res.error}`, 'error');
+    }
+  }
+}
 
 
-    if (window.location.search.includes('theme=light')) applyTheme('theme-light');
+// ================= CALIBRACIÓN Y DETECCIÓN DE CÁMARAS =================
 
-    else if (window.location.search.includes('theme=oled')) applyTheme('theme-oled');
+async function refreshCalibCameras() {
+  const sel = document.getElementById('calib-camera-select');
+  if (!sel || !window.pywebview || !window.pywebview.api || !window.pywebview.api.list_cameras) {
+    await runCameraCalibration();
+    return;
+  }
+  try {
+    const cams = await window.pywebview.api.list_cameras();
+    sel.innerHTML = '';
+    if (cams && cams.length > 0) {
+      cams.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.index;
+        opt.innerText = `📷 ${c.name}`;
+        sel.appendChild(opt);
+      });
+      if (typeof currentSource === 'number') {
+        sel.value = currentSource;
+      } else {
+        sel.value = cams[0].index;
+        currentSource = cams[0].index;
+        sourceType = 'camera';
+      }
+    } else {
+      sel.innerHTML = '<option value="0">Cámara USB Principal (0)</option>';
+      if (currentSource === null) currentSource = 0;
+    }
+    await runCameraCalibration();
+  } catch (err) {
+    console.warn('[Calibration] Error listando cámaras:', err);
+    await runCameraCalibration();
+  }
+}
 
-    else if (window.location.search.includes('theme=sepia')) applyTheme('theme-sepia');
+function onCalibCameraSelectChange(camIdx) {
+  currentSource = parseInt(camIdx);
+  sourceType = 'camera';
+  runCameraCalibration();
+}
 
-  }, 100);
-
-});
-
-
-
+window.populateChartAxes = populateChartAxes;
+window.changeChartAxes = changeChartAxes;
+window.changeChartType = changeChartType;
+window.switchHistoryTab = switchHistoryTab;
+window.refreshSavedSessionsList = refreshSavedSessionsList;
+window.loadSessionFileToView = loadSessionFileToView;
+window.returnToLiveHistory = returnToLiveHistory;
+window.openExternalSessionFile = openExternalSessionFile;
+window.deleteSessionFilePrompt = deleteSessionFilePrompt;
+window.refreshCalibCameras = refreshCalibCameras;
+window.onCalibCameraSelectChange = onCalibCameraSelectChange;

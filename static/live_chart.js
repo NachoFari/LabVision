@@ -27,6 +27,8 @@
     root.exportChartImage = exports.exportChartImage;
     root.resetChart = exports.resetChart;
     root.switchChartMode = exports.switchChartMode;
+    root.setChartSeries = exports.setChartSeries;
+    root.setChartFillType = exports.setChartFillType;
   }
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';

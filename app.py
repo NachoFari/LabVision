@@ -183,7 +183,21 @@ class LabVisionAPI:
             return {"error": "No se pudo capturar imagen para calibrar"}
 
         eval_result = self._get_engine().calibrate_frame(frame, roi=roi)
-        return {"success": True, "evaluation": eval_result}
+        preview_b64 = None
+        try:
+            preview_frame = frame.copy()
+            if roi and isinstance(roi, dict):
+                h, w = preview_frame.shape[:2]
+                rx = int(roi.get("x", 0) * w)
+                ry = int(roi.get("y", 0) * h)
+                rw = int(roi.get("w", 1) * w)
+                rh = int(roi.get("h", 1) * h)
+                cv2.rectangle(preview_frame, (rx, ry), (rx + rw, ry + rh), (56, 189, 248), 2)
+            _, buffer = cv2.imencode('.jpg', preview_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
+            preview_b64 = f"data:image/jpeg;base64,{base64.b64encode(buffer).decode('utf-8')}"
+        except Exception:
+            pass
+        return {"success": True, "evaluation": eval_result, "preview_image": preview_b64}
 
     def test_roi_reading(self, source, roi, mode, unit="g", profile="normal", auto_track=False):
         """Ejecuta una prueba instantánea sobre el recuadro seleccionado."""
@@ -501,6 +515,93 @@ class LabVisionAPI:
         
         self._get_engine().export_to_csv(rows, csv_path, mode=export_mode, selected_columns=selected_columns)
         return {"success": True, "file_path": csv_path}
+
+    def list_saved_sessions(self):
+        """Lista los archivos CSV y Excel de sesiones previas en la carpeta output."""
+        output_dir = self._config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
+        if not os.path.exists(output_dir):
+            return []
+        
+        sessions = []
+        try:
+            for fname in os.listdir(output_dir):
+                if fname.startswith('.') or fname.endswith('.gitkeep') or fname.endswith('.mp4'):
+                    continue
+                fpath = os.path.join(output_dir, fname)
+                if not os.path.isfile(fpath):
+                    continue
+                
+                ext = os.path.splitext(fname)[1].lower()
+                if ext not in ['.csv', '.xlsx', '.xls']:
+                    continue
+                
+                stat = os.stat(fpath)
+                mtime_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(stat.st_mtime))
+                size_kb = round(stat.st_size / 1024, 1)
+                
+                rows_count = None
+                if ext == '.csv':
+                    try:
+                        with open(fpath, 'r', encoding='utf-8', errors='ignore') as sf:
+                            rows_count = max(0, sum(1 for line in sf if line.strip()) - 1)
+                    except Exception:
+                        pass
+                
+                sessions.append({
+                    "filename": fname,
+                    "filepath": fpath,
+                    "modified": mtime_str,
+                    "timestamp": stat.st_mtime,
+                    "size_kb": size_kb,
+                    "type": "csv" if ext == '.csv' else "excel",
+                    "rows_count": rows_count
+                })
+            sessions.sort(key=lambda s: s["timestamp"], reverse=True)
+        except Exception as e:
+            print(f"[LabVision] Error listando sesiones: {e}")
+        return sessions
+
+    def load_saved_session_data(self, filepath):
+        """Lee y parsea un archivo CSV previo para visualizarlo en la tabla del historial."""
+        if not filepath or not os.path.exists(filepath):
+            return {"error": "Archivo no encontrado"}
+        
+        try:
+            import csv
+            headers = []
+            rows = []
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as sf:
+                sample = sf.read(2048)
+                sf.seek(0)
+                delimiter = ';' if sample.count(';') > sample.count(',') else ','
+                reader = csv.reader(sf, delimiter=delimiter)
+                for i, r in enumerate(reader):
+                    if not r or not any(field.strip() for field in r):
+                        continue
+                    if i == 0:
+                        headers = [h.strip() for h in r]
+                    else:
+                        rows.append([col.strip() for col in r])
+            
+            return {
+                "success": True,
+                "filename": os.path.basename(filepath),
+                "headers": headers,
+                "rows": rows[:500],
+                "total_rows": len(rows)
+            }
+        except Exception as e:
+            return {"error": f"Error leyendo archivo de datos: {e}"}
+
+    def delete_saved_session(self, filepath):
+        """Elimina un archivo de sesi?n previa de forma segura."""
+        if not filepath or not os.path.exists(filepath):
+            return {"error": "Archivo no encontrado"}
+        try:
+            os.remove(filepath)
+            return {"success": True}
+        except Exception as e:
+            return {"error": f"Error eliminando archivo: {e}"}
 
     def test_template_ocr(self, image_b64, sub_rois):
         """
