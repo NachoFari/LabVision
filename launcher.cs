@@ -188,6 +188,16 @@ namespace LabVisionLauncher
                 // =========================================================================
                 // Configurar inicio del proceso y aislamiento completo de entorno
                 // =========================================================================
+                // Preferir siempre pythonw.exe para evitar cualquier ventana de consola negra
+                if (pythonPath.EndsWith("python.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    string pythonwCandidate = pythonPath.Substring(0, pythonPath.Length - 10) + "pythonw.exe";
+                    if (File.Exists(pythonwCandidate))
+                    {
+                        pythonPath = pythonwCandidate;
+                    }
+                }
+
                 ProcessStartInfo psi = new ProcessStartInfo();
                 psi.FileName = pythonPath;
 
@@ -209,7 +219,7 @@ namespace LabVisionLauncher
 
                 psi.WorkingDirectory = baseDir;
                 psi.UseShellExecute = false;
-                psi.CreateNoWindow = false;
+                psi.CreateNoWindow = true;
                 psi.WindowStyle = ProcessWindowStyle.Normal;
 
                 // Configurar variables de entorno para aislamiento completo

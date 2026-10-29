@@ -587,7 +587,8 @@ def start_app():
         height=880,
         min_size=(1024, 680),
         maximized=True,
-        text_select=True
+        text_select=True,
+        background_color='#0b0f19'
     )
     api.set_window(window)
 

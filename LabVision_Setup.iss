@@ -25,7 +25,7 @@ PrivilegesRequired=lowest
 OutputDir={#MyScriptDir}\dist
 OutputBaseFilename=LabVision-Setup-v0.8
 SetupIconFile={#MyScriptDir}\labvision.ico
-Compression=lzma2/ultra64
+Compression=lzma2/normal
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayIcon={app}\{#MyAppExeName}
@@ -64,8 +64,7 @@ Source: "{#MyScriptDir}\config\*"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "{#MyScriptDir}\benchmark\*"; DestDir: "{app}\benchmark"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\static\*"; DestDir: "{app}\static"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\models\*"; DestDir: "{app}\models"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Runtime portable opcional (para instaladores completos offline)
-; Source: "{#MyScriptDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyScriptDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\output\.gitkeep"; DestDir: "{app}\output"; Flags: ignoreversion
 
 [Dirs]

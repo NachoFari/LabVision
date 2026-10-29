@@ -1,0 +1,256 @@
+/* ==========================================================================
+   LabVision Pro - Riot-Client-style Startup Splash Screen
+   Palette: Lab Dark #0B0F19, Cyan #06B6D4, Emerald #10B981, Accent #38BDF8
+   Inspired by NaTex Modular Splash System
+   Created by NachoFari
+   ========================================================================== */
+
+#labvisionSplashIntro {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0b0f19;
+    overflow: hidden;
+    user-select: none;
+    transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.45s ease;
+}
+
+#labvisionSplashIntro.splash-closing {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: blur(8px);
+    pointer-events: none;
+}
+
+#labvisionSplashIntro.hidden {
+    display: none !important;
+}
+
+/* Efectos ambientales de fondo */
+.splash-ambient-glow {
+    position: absolute;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.24) 0%, rgba(16, 185, 129, 0.14) 38%, transparent 72%);
+    animation: splashPulseGlow 2.4s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+.splash-ring {
+    border: 1px solid rgba(6, 182, 212, 0.22);
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    animation: splashRingExpand 9s linear infinite;
+}
+
+.splash-ring-1 {
+    width: 270px;
+    height: 270px;
+    border-color: rgba(6, 182, 212, 0.30);
+    box-shadow: 0 0 24px rgba(6, 182, 212, 0.12);
+}
+
+.splash-ring-2 {
+    width: 400px;
+    height: 400px;
+    border-color: rgba(16, 185, 129, 0.22);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.10);
+    animation-duration: 14s;
+    animation-direction: reverse;
+}
+
+/* Escenario central */
+.splash-center-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.splash-mascot-frame {
+    width: 112px;
+    height: 112px;
+    border-radius: 26px;
+    background: linear-gradient(145deg, #131B2E, #0d1527);
+    border: 2px solid rgba(6, 182, 212, 0.7);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6),
+                0 0 32px rgba(6, 182, 212, 0.35),
+                0 0 16px rgba(16, 185, 129, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    animation: splashMascotPop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.splash-mascot-frame::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    transform: rotate(25deg);
+    animation: splashShimmer 2.2s infinite ease-in-out;
+    pointer-events: none;
+}
+
+.splash-mascot-frame svg {
+    width: 72px;
+    height: 72px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    shape-rendering: crispEdges;
+    filter: drop-shadow(0 6px 14px rgba(6, 182, 212, 0.45));
+    display: block;
+}
+
+.splash-title-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: splashFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.splash-brand-name {
+    font-size: 46px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1;
+    background: linear-gradient(135deg, #ffffff 0%, #38bdf8 45%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.55));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.splash-brand-sub {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    line-height: 1.2;
+    text-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    text-align: center;
+}
+
+/* Barra de carga estilo Riot Client */
+.splash-loader-container {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    animation: splashFadeUp 0.55s ease 0.25s both;
+}
+
+.splash-progress-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(148, 163, 184, 0.18);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+}
+
+.splash-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #38bdf8 100%);
+    border-radius: 99px;
+    box-shadow: 0 0 14px rgba(6, 182, 212, 0.85), 0 0 4px rgba(16, 185, 129, 0.9);
+    transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Marca de agua inferior estilo pixel art */
+.splash-author-watermark {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    color: rgba(148, 163, 184, 0.22);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.splash-pixel-credit-svg {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    shape-rendering: crispEdges;
+}
+
+/* Keyframes de animación */
+@keyframes splashPulseGlow {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.55;
+    }
+    100% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+@keyframes splashRingExpand {
+    0% {
+        transform: scale(0.95) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.05) rotate(180deg);
+        opacity: 0.75;
+    }
+    100% {
+        transform: scale(0.95) rotate(360deg);
+        opacity: 0.3;
+    }
+}
+
+@keyframes splashMascotPop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes splashShimmer {
+    0% {
+        transform: translateX(-150%) rotate(25deg);
+    }
+    100% {
+        transform: translateX(250%) rotate(25deg);
+    }
+}
+
+@keyframes splashFadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
