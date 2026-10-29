@@ -63,6 +63,7 @@ Source: "{#MyScriptDir}\notifications\*"; DestDir: "{app}\notifications"; Flags:
 Source: "{#MyScriptDir}\config\*"; DestDir: "{app}\config"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\benchmark\*"; DestDir: "{app}\benchmark"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\static\*"; DestDir: "{app}\static"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyScriptDir}\templates\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\models\*"; DestDir: "{app}\models"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyScriptDir}\output\.gitkeep"; DestDir: "{app}\output"; Flags: ignoreversion
