@@ -35,6 +35,7 @@
   </script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="splash.css">
+  <link rel="stylesheet" href="themes.css">
 </head>
 <body class="bg-lab-dark text-slate-100 h-screen overflow-hidden flex flex-col font-sans select-none antialiased theme-dark theme-transition">
 
@@ -128,8 +129,45 @@
           <h1 class="text-base font-bold tracking-tight text-white">LabVision</h1>
           <span class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v0.8</span>
         </div>
-        <p class="text-[11px] text-slate-400">Digitalización de Pantallas de Laboratorio a Excel & CSV</p>
+        <p class="text-[11px] text-slate-400" data-i18n="app_subtitle">Digitalización de Pantallas de Laboratorio a Excel & CSV</p>
       </div>
+    </div>
+
+    <!-- ================= SELECTOR DE INSTRUMENTOS PREDEFINIDOS Y PLANTILLAS (WP5) ================= -->
+    <div class="flex items-center space-x-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1 shadow-inner">
+      <div class="flex items-center space-x-1.5 mr-1">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden xl:inline">Instrumento:</span>
+      </div>
+      <select id="preset-instrument-select" onchange="handlePresetChange(this.value)" class="bg-slate-800 text-cyan-300 font-semibold text-xs rounded-lg px-2.5 py-1 border border-slate-700 hover:border-cyan-500 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-sm transition-colors">
+        <optgroup label="── Instrumentos Predefinidos ──">
+          <option value="viscometer" selected>Viscosímetro Digital (NDJ-8S)</option>
+          <option value="balance">Balanza Analítica</option>
+        </optgroup>
+        <optgroup id="optgroup-custom-templates" label="── Plantillas Personalizadas ──" class="hidden">
+          <!-- Poblado dinámicamente -->
+        </optgroup>
+        <optgroup label="── Acciones de Plantilla ──">
+          <option value="__new_template__">➕ Diseñar Nueva Plantilla Personalizada...</option>
+          <option value="__import_template__">📂 Importar Plantilla (.lvtemplate)...</option>
+        </optgroup>
+      </select>
+      <button type="button" onclick="openTemplateBuilder()" title="Abrir Constructor No-Code de Plantillas" class="px-2 py-1 rounded-lg bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-700/70 text-cyan-300 text-xs font-semibold flex items-center space-x-1 transition-all shadow-sm">
+        <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor">
+          <rect x="2" y="2" width="5" height="5"/>
+          <rect x="9" y="2" width="5" height="5"/>
+          <rect x="2" y="9" width="5" height="5"/>
+          <rect x="11" y="9" width="1" height="5"/>
+          <rect x="9" y="11" width="5" height="1"/>
+        </svg>
+        <span class="hidden lg:inline text-[11px]">+ Diseñar</span>
+      </button>
+      <button type="button" onclick="importTemplateFile()" title="Importar archivo .lvtemplate" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+          <rect x="2" y="3" width="5" height="2"/>
+          <rect x="2" y="5" width="12" height="8"/>
+        </svg>
+      </button>
     </div>
 
     <!-- PESTAÑAS DE PANTALLA / MODOS DE VISTA PRINCIPALES -->
@@ -141,7 +179,7 @@
           <rect x="6" y="12" width="4" height="1"/>
           <rect x="4" y="13" width="8" height="1"/>
         </svg>
-        <span>Captura en Vivo</span>
+        <span data-i18n="nav_live">Captura en Vivo</span>
       </button>
 
       <button id="nav-btn-chart" onclick="switchScreen('chart')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
@@ -153,7 +191,7 @@
           <rect x="9" y="4" width="2" height="9" fill="#38bdf8"/>
           <rect x="12" y="2" width="2" height="11" fill="#38bdf8"/>
         </svg>
-        <span>Gráficos en Vivo</span>
+        <span data-i18n="nav_chart">Gráficos en Vivo</span>
       </button>
 
       <button id="nav-btn-history" onclick="switchScreen('history')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
@@ -174,7 +212,7 @@
           <rect x="2" y="7" width="3" height="2"/>
           <rect x="11" y="7" width="3" height="2"/>
         </svg>
-        <span>Calibración</span>
+        <span data-i18n="nav_calibration">Calibración</span>
       </button>
     </nav>
 
@@ -184,6 +222,22 @@
       <div id="hw-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         <span id="hw-text" class="text-slate-300 font-medium text-[11px]">Hardware</span>
+      </div>
+
+            <!-- BOTÓN CAPTURA DE PANTALLA UX (F9) -->
+      <button onclick="takeScreenshotUI()" title="Tomar captura de pantalla de la interfaz (F9 / Botón)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-cyan-300 transition-colors">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+          <rect x="5" y="2" width="6" height="2"/>
+          <rect x="2" y="4" width="12" height="10" rx="1"/>
+          <circle cx="8" cy="9" r="3" fill="#0f172a"/>
+          <circle cx="8" cy="9" r="2" fill="#38bdf8"/>
+        </svg>
+      </button>
+
+      <!-- SELECTOR DE IDIOMA (ES / EN) -->
+      <div class="flex items-center bg-slate-800/80 border border-slate-700 rounded-lg p-0.5 text-[10px] font-bold">
+        <button id="btn-lang-es" onclick="applyLanguage('es')" class="px-2 py-0.5 rounded text-white bg-cyan-600 transition-colors">ES</button>
+        <button id="btn-lang-en" onclick="applyLanguage('en')" class="px-2 py-0.5 rounded text-slate-400 hover:text-white transition-colors">EN</button>
       </div>
 
       <!-- BOTÓN AJUSTES Y PERSONALIZACIÓN (Temas, Escala, Sonidos) -->
@@ -201,7 +255,7 @@
           <rect x="4" y="4" width="8" height="8"/>
           <rect x="6" y="6" width="4" height="4" fill="#0b0f19"/>
         </svg>
-        <span>Ajustes</span>
+        <span data-i18n="nav_settings">Ajustes</span>
       </button>
 
       <!-- Botón Modo Tutorial (Librito de Ayuda) -->
@@ -331,7 +385,7 @@
               <rect x="4" y="9" width="3" height="3" fill="#0f172a"/>
               <rect x="9" y="9" width="3" height="3" fill="#0f172a"/>
             </svg>
-            <span>Archivo de Video</span>
+            <span data-i18n="lbl_source_video">Archivo de Video</span>
           </button>
           <button id="btn-src-camera" onclick="setSourceType('camera')" class="py-1.5 px-2.5 rounded-lg border text-xs font-medium flex items-center justify-center space-x-1.5 border-slate-700 bg-slate-800/50 text-slate-400 hover:text-slate-200">
             <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
@@ -581,12 +635,12 @@
             <svg class="w-3 h-3 fill-rose-300" viewBox="0 0 16 16" style="shape-rendering: crispEdges;">
               <rect x="3" y="3" width="10" height="10"/>
             </svg>
-            <span>DETENER</span>
+            <span data-i18n="btn_stop">DETENER</span>
           </button>
         </div>
 
         <div class="flex items-center space-x-2">
-          <button id="btn-open-csv" onclick="openCsvResult()" disabled class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-semibold flex items-center space-x-1 disabled:opacity-30 transition-colors">
+          <button id="btn-open-csv" onclick="openExportCsvModal()" disabled class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-semibold flex items-center space-x-1 disabled:opacity-30 transition-colors">
             <span>CSV</span>
           </button>
           <button id="btn-open-excel" onclick="openExcelResult()" disabled class="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-700/60 text-emerald-300 text-xs font-semibold flex items-center space-x-1.5 disabled:opacity-30 transition-colors">
@@ -728,7 +782,7 @@
           <button id="filter-warn" onclick="filterHistory('warn')" class="px-2.5 py-1 rounded text-slate-400 hover:text-white">Solo Dudosas</button>
         </div>
 
-        <button onclick="openCsvResult()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-semibold">
+        <button onclick="openExportCsvModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs font-semibold">
           Exportar CSV
         </button>
         <button onclick="openExcelResult()" class="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs font-semibold">
@@ -845,57 +899,19 @@
       </div>
 
       <div class="space-y-4 text-xs">
-        <!-- 1. TEMAS VISUALES -->
+        <!-- 1. IDIOMA Y TEMAS VISUALES NATEX (21 TEMAS) -->
         <div>
-          <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-2">1. Tema Visual de la Interfaz</label>
-          <div class="grid grid-cols-2 gap-2.5">
-            <!-- Modo Oscuro Lab (Default) -->
-            <button onclick="applyTheme('theme-dark')" class="p-3 rounded-xl border border-brand-500 bg-slate-900 text-left flex items-center justify-between hover:border-brand-400 transition-all">
-              <div class="flex items-center space-x-2.5">
-                <span class="w-4 h-4 rounded-full bg-[#0B0F19] border border-cyan-500 shrink-0"></span>
-                <div>
-                  <b class="text-white block text-xs">Oscuro Laboratorio</b>
-                  <span class="text-[10px] text-slate-400">Predeterminado estándar</span>
-                </div>
-              </div>
-              <span id="mark-theme-dark" class="text-brand-400 font-bold">✓</span>
-            </button>
-
-            <!-- Modo Claro Bio-Médico -->
-            <button onclick="applyTheme('theme-light')" class="p-3 rounded-xl border border-slate-700 bg-slate-800 text-left flex items-center justify-between hover:border-slate-500 transition-all">
-              <div class="flex items-center space-x-2.5">
-                <span class="w-4 h-4 rounded-full bg-slate-100 border border-slate-400 shrink-0"></span>
-                <div>
-                  <b class="text-white block text-xs">Claro Bio-Médico</b>
-                  <span class="text-[10px] text-slate-400">Para mesadas muy iluminadas</span>
-                </div>
-              </div>
-              <span id="mark-theme-light" class="text-brand-400 font-bold hidden">✓</span>
-            </button>
-
-            <!-- Modo Cyber OLED -->
-            <button onclick="applyTheme('theme-oled')" class="p-3 rounded-xl border border-slate-700 bg-black text-left flex items-center justify-between hover:border-cyan-400 transition-all">
-              <div class="flex items-center space-x-2.5">
-                <span class="w-4 h-4 rounded-full bg-black border border-[#00f0ff] shrink-0"></span>
-                <div>
-                  <b class="text-white block text-xs">Cyber Neón OLED</b>
-                  <span class="text-[10px] text-cyan-400">Negro absoluto & Neón</span>
-                </div>
-              </div>
-              <span id="mark-theme-oled" class="text-brand-400 font-bold hidden">✓</span>
-            </button>
-
-            <!-- Modo Ámbar Nocturno -->
-            <button onclick="applyTheme('theme-sepia')" class="p-3 rounded-xl border border-slate-700 bg-[#14100c] text-left flex items-center justify-between hover:border-amber-500 transition-all">
-              <div class="flex items-center space-x-2.5">
-                <span class="w-4 h-4 rounded-full bg-[#1c1610] border border-amber-500 shrink-0"></span>
-                <div>
-                  <b class="text-amber-200 block text-xs">Ámbar Nocturno</b>
-                  <span class="text-[10px] text-amber-500">Cálido para cuartos oscuros</span>
-                </div>
-              </div>
-              <span id="mark-theme-sepia" class="text-brand-400 font-bold hidden">✓</span>
-            </button>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">1. Tema Visual y Mascota (NaTex Themes)</label>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[10px] text-slate-400">Idioma:</span>
+              <button type="button" onclick="applyLanguage('es')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-600 text-white">ES</button>
+              <button type="button" onclick="applyLanguage('en')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 hover:text-white">EN</button>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 mb-2">Selecciona entre los 20 temas de diseño de NaTex con mascotas pixel art:</p>
+          <div id="themeSelectorGrid" class="theme-selector-grid custom-scrollbar bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+            <!-- Renderizado dinámico de los 21 temas por theme_catalog.js -->
           </div>
         </div>
 
@@ -966,6 +982,32 @@
               <option value="30">Cada 30 minutos</option>
             </select>
           </div>
+        </div>
+
+        <!-- 7. GITHUB AUTO-UPDATER & CAPTURAS UX -->
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">7. Actualizaciones de GitHub & Evaluador UX</label>
+              <p class="text-[10px] text-slate-400">Verifica nuevas versiones oficiales o realiza capturas de pantalla.</p>
+            </div>
+            <span id="updater-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">v0.8.0</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" id="btn-check-update" onclick="checkForUpdatesUI()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-all">
+              <span>🔄</span>
+              <span id="txt-check-update">Comprobar Actualizaciones</span>
+            </button>
+            <button type="button" id="btn-install-update" onclick="installUpdateUI()" class="hidden px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 transition-all shadow-md">
+              <span>🚀</span>
+              <span id="txt-install-update">Descargar e Instalar Ahora</span>
+            </button>
+            <button type="button" onclick="takeScreenshotUI()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-cyan-300 text-xs font-semibold flex items-center space-x-1.5 transition-all" title="Capturar pantalla (F9)">
+              <span>📸</span>
+              <span>Capturar Pantalla</span>
+            </button>
+          </div>
+          <div id="updater-feedback" class="hidden text-[11px] p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300"></div>
         </div>
 
         <!-- 6. PANTALLA DE INICIO (SPLASH SCREEN RIOT STYLE) -->
@@ -1130,10 +1172,213 @@
     </div>
   </div>
 
+  <!-- ================= MODAL CONSTRUCTOR VISUAL NO-CODE DE PLANTILLAS ================= -->
+  <div id="templateBuilderModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col p-4 md:p-6 hidden">
+    <!-- Encabezado del Constructor -->
+    <div class="flex items-center justify-between pb-3 border-b border-lab-border shrink-0 bg-lab-card/90 px-4 py-2.5 rounded-t-2xl">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-600/60 flex items-center justify-center text-cyan-400 font-bold shadow-sm">
+          📐
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-sm font-bold text-white tracking-tight">Constructor Visual No-Code de Plantillas</h2>
+            <span class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">.lvtemplate v1.0</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Define múltiples Sub-ROIs arrastrando cajas sobre la pantalla y prueba el OCR en tiempo real</p>
+        </div>
+      </div>
+
+      <!-- Configuración Rápida de Plantilla -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
+          <label class="text-[10px] uppercase font-bold text-slate-400">Nombre:</label>
+          <input id="builder-tpl-name" type="text" value="Nueva Plantilla Personalizada" class="bg-transparent text-xs font-semibold text-cyan-300 focus:outline-none w-52">
+        </div>
+
+        <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
+          <label class="text-[10px] uppercase font-bold text-slate-400">Display:</label>
+          <select id="builder-display-type" class="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer">
+            <option value="lcd_reflective">LCD Reflectivo (Gris)</option>
+            <option value="lcd_blue">LCD Matriz Azul (NDJ)</option>
+            <option value="led_7seg">LED 7-Segmentos (Rojo/Verde)</option>
+            <option value="vfd">VFD Fluorescente</option>
+          </select>
+        </div>
+
+        <button type="button" onclick="closeTemplateBuilder()" title="Cerrar Constructor" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Cuerpo Principal: Visor Canvas + Sidebar de Variables -->
+    <div class="flex-1 min-h-0 grid grid-cols-12 gap-4 mt-3 overflow-hidden">
+      
+      <!-- LADO IZQUIERDO: VISOR INTERACTIVO DE CANVAS (8 columnas) -->
+      <div class="col-span-8 flex flex-col bg-slate-950 rounded-2xl border border-lab-border overflow-hidden shadow-2xl">
+        <!-- Barra de Herramientas del Canvas -->
+        <div class="px-3.5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between shrink-0 text-xs">
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="window.labBuilder.captureCurrentVideoFrame()" title="Usar fotograma del video o cámara activa" class="px-2.5 py-1 rounded-lg bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 font-semibold flex items-center space-x-1.5 transition-all">
+              <span>📸 Usar Fotograma Actual</span>
+            </button>
+            <button type="button" onclick="window.labBuilder.triggerUploadImage()" title="Cargar imagen JPG/PNG desde el equipo" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium flex items-center space-x-1.5 transition-all">
+              <span>📁 Cargar Imagen Local</span>
+            </button>
+            <input type="file" id="builder-file-input" accept="image/*" class="hidden">
+            <input type="file" id="builder-import-input" accept=".lvtemplate,.json" class="hidden">
+          </div>
+
+          <!-- Controles de Zoom y Cuadrícula -->
+          <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 font-mono">
+              <button type="button" onclick="window.labBuilder.zoomOut()" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white">-</button>
+              <span id="builder-zoom-label" class="px-2 text-[11px] text-cyan-400 font-bold">100%</span>
+              <button type="button" onclick="window.labBuilder.zoomIn()" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white">+</button>
+              <button type="button" onclick="window.labBuilder.zoomFit()" class="px-2 py-0.5 rounded text-[10px] text-slate-400 hover:text-white">Ajustar</button>
+            </div>
+
+            <button id="btn-builder-grid" type="button" onclick="window.labBuilder.toggleGrid()" title="Mostrar cuadrícula milimetrada" class="px-2 py-1 rounded-lg border border-slate-700 bg-cyan-900/60 text-cyan-300 text-xs font-semibold">
+              Grid
+            </button>
+          </div>
+        </div>
+
+        <!-- Área de Dibujo Scrollable/Pannable -->
+        <div id="builder-canvas-container" class="flex-1 min-h-0 relative overflow-auto p-4 flex items-center justify-center bg-slate-950 custom-scrollbar">
+          <canvas id="builder-canvas" class="cursor-crosshair shadow-2xl block mx-auto"></canvas>
+        </div>
+
+        <!-- Barra de Estado Inferior del Canvas -->
+        <div class="px-4 py-1.5 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 font-mono shrink-0">
+          <div id="builder-coord-hud" class="text-slate-400">X: 0px (0.0%) | Y: 0px (0.0%)</div>
+          <div class="text-slate-500 text-[10px]">Arrastra para trazar nuevo Sub-ROI • Clic para seleccionar • Esquinas para redimensionar</div>
+        </div>
+      </div>
+
+      <!-- LADO DERECHO: PANEL SIDEBAR DE SUB-ROIS Y ACCIONES (4 columnas) -->
+      <div class="col-span-4 flex flex-col bg-lab-card rounded-2xl border border-lab-border overflow-hidden shadow-2xl">
+        <!-- Encabezado del Sidebar -->
+        <div class="px-4 py-2.5 bg-slate-900/90 border-b border-lab-border flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-white">Variables / Sub-ROIs</span>
+            <span id="builder-roi-count" class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">0 variables</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button type="button" onclick="window.labBuilder.addSubRoiManually()" title="Añadir Sub-ROI" class="px-2 py-1 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-700 text-cyan-300 text-xs font-semibold transition-all">
+              + Añadir
+            </button>
+            <button type="button" onclick="window.labBuilder.clearAllSubRois()" title="Limpiar todas las variables" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 border border-slate-700 text-xs transition-all">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista Dinámica de Tarjetas de Variables -->
+        <div id="builder-roi-list" class="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
+          <!-- Poblado por builder.js -->
+        </div>
+
+        <!-- Acciones Inferiores del Constructor -->
+        <div class="p-3.5 bg-slate-900/95 border-t border-lab-border space-y-2 shrink-0">
+          <!-- Botón Probar OCR en Vivo -->
+          <button id="btn-test-ocr" type="button" onclick="window.labBuilder.testTemplateOcr()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-cyan-950/40 transition-all">
+            <span class="text-sm">🧪</span>
+            <span>PROBAR OCR EN VIVO</span>
+          </button>
+
+          <!-- Guardar y Exportar -->
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="window.labBuilder.saveTemplate()" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-emerald-950/40">
+              <span>💾</span>
+              <span>Guardar Plantilla</span>
+            </button>
+            <button type="button" onclick="window.labBuilder.exportLvTemplate()" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 font-bold text-xs flex items-center justify-center space-x-1.5 transition-all">
+              <span>📤</span>
+              <span>Exportar .lvtemplate</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL EXPORTACIÓN A CSV CON SELECCIÓN DE COLUMNAS ================= -->
+  <div id="modal-export-csv" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-lab-card border border-lab-border rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-lab-border pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-700 flex items-center justify-center text-cyan-400 font-bold text-xs font-mono">
+            CSV
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Exportación de Datos a CSV</h3>
+            <p class="text-[11px] text-slate-400">Personaliza las columnas a incluir en el archivo generado</p>
+          </div>
+        </div>
+        <button onclick="closeExportCsvModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Selector de Modo de Exportación -->
+      <div class="space-y-3">
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Modo de Columnas:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 cursor-pointer hover:border-cyan-500 transition-colors">
+            <input type="radio" name="export-col-mode" id="radio-col-all" value="all" checked onchange="toggleExportColumnMode('all')" class="text-cyan-500 focus:ring-cyan-500">
+            <div>
+              <span class="block text-xs font-bold text-white">Todas las Columnas</span>
+              <span class="block text-[10px] text-slate-400">Exporta la totalidad de variables y metadatos</span>
+            </div>
+          </label>
+          <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 cursor-pointer hover:border-cyan-500 transition-colors">
+            <input type="radio" name="export-col-mode" id="radio-col-custom" value="custom" onchange="toggleExportColumnMode('custom')" class="text-cyan-500 focus:ring-cyan-500">
+            <div>
+              <span class="block text-xs font-bold text-white">Selección Específica</span>
+              <span class="block text-[10px] text-slate-400">Elige mediante casillas las variables deseadas</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Contenedor de Checkboxes de Columnas -->
+        <div id="export-columns-picker" class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-slate-300">Columnas Disponibles:</span>
+            <div class="flex space-x-2 text-[10px]">
+              <button type="button" onclick="selectAllExportCheckboxes(true)" class="text-cyan-400 hover:underline">✓ Seleccionar Todas</button>
+              <span class="text-slate-600">|</span>
+              <button type="button" onclick="selectAllExportCheckboxes(false)" class="text-rose-400 hover:underline">✕ Desmarcar Todas</button>
+            </div>
+          </div>
+
+          <div id="export-columns-checklist" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 rounded-xl bg-slate-900 border border-slate-800 custom-scrollbar">
+            <!-- Poblado dinámicamente según instrumento activo -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center justify-between pt-3 border-t border-lab-border">
+        <button type="button" onclick="closeExportCsvModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+          Cancelar
+        </button>
+        <button type="button" onclick="executeCsvExport()" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-cyan-950/40 transition-all">
+          <span>📥</span>
+          <span>GENERAR Y DESCARGAR CSV</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPTS MODULARES -->
   <script src="splash.js"></script>
   <script src="lab_audio.js"></script>
   <script src="live_chart.js"></script>
+  <script src="i18n.js"></script>
+  <script src="theme_catalog.js"></script>
+  <script src="system_features.js"></script>
+  <script src="builder.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

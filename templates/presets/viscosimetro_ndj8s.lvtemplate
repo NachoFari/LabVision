@@ -1,0 +1,72 @@
+{
+  "$schema": "https://labvision.org/schemas/v1/template.json",
+  "lvtemplate_version": "1.0",
+  "metadata": {
+    "template_id": "viscometer_ndj8s",
+    "name": "Viscosímetro Digital (NDJ-8S)",
+    "description": "Plantilla estándar de fábrica para viscosímetro rotacional NDJ-8S",
+    "author": "NachoFari",
+    "institution": "Laboratorio de Reología y Fluidos",
+    "created_at": "2026-10-28T12:00:00Z",
+    "compatible_hardware": ["NDJ-8S", "NDJ-5S", "Brookfield DV"]
+  },
+  "display_profile": {
+    "type": "lcd_blue",
+    "preprocessing": {
+      "grayscale": true,
+      "clahe": false,
+      "threshold_mode": "otsu_adaptive",
+      "invert_polarity": false,
+      "noise_kernel_size": 3
+    }
+  },
+  "sub_rois": [
+    {
+      "id": "viscosity",
+      "display_label": "Viscosidad",
+      "unit": "mPa·s",
+      "coordinates_relative": { "x": 0.45, "y": 0.40, "w": 0.50, "h": 0.35 },
+      "data_type": "float",
+      "decimal_places": 1,
+      "valid_range": [0.1, 2000000.0],
+      "ocr_whitelist": "0123456789."
+    },
+    {
+      "id": "torque",
+      "display_label": "Torque",
+      "unit": "%",
+      "coordinates_relative": { "x": 0.45, "y": 0.75, "w": 0.35, "h": 0.20 },
+      "data_type": "float",
+      "decimal_places": 1,
+      "valid_range": [0.0, 100.0],
+      "ocr_whitelist": "0123456789.%"
+    },
+    {
+      "id": "speed",
+      "display_label": "Velocidad",
+      "unit": "RPM",
+      "coordinates_relative": { "x": 0.05, "y": 0.40, "w": 0.35, "h": 0.25 },
+      "data_type": "float",
+      "decimal_places": 1,
+      "valid_range": [0.1, 100.0],
+      "ocr_whitelist": "0123456789."
+    },
+    {
+      "id": "rotor",
+      "display_label": "Rotor",
+      "unit": "#",
+      "coordinates_relative": { "x": 0.05, "y": 0.15, "w": 0.35, "h": 0.25 },
+      "data_type": "int",
+      "decimal_places": 0,
+      "valid_range": [1, 4],
+      "ocr_whitelist": "1234"
+    }
+  ],
+  "streaming_export": {
+    "default_sample_interval_sec": 1.0,
+    "csv_columns": ["Tiempo_seg", "Timestamp", "Rotor", "Velocidad_RPM", "Viscosidad_mPas", "Torque_Pct", "Confianza_Pct", "Estado"]
+  },
+  "live_chart": {
+    "primary_series": { "field_id": "viscosity", "color": "#06b6d4", "chart_type": "line" }
+  }
+}

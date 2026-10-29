@@ -488,18 +488,273 @@ class LabVisionAPI:
         self.current_state["progress_pct"] = 100
         self.is_processing = False
 
-    def export_csv_now(self):
-        """Exporta inmediatamente a CSV los datos acumulados hasta el momento."""
+    def export_csv_now(self, selected_columns=None, mode=None):
+        """Exporta inmediatamente a CSV los datos acumulados con selección de columnas opcional."""
         if not self.last_all_data_rows and not self.current_state.get("recent_rows"):
             return {"error": "No hay datos acumulados para exportar"}
 
         rows = self.last_all_data_rows or self.current_state.get("recent_rows", [])
         output_dir = self._config.get("output_dir", os.path.join(os.path.dirname(os.path.abspath(__file__)), "output"))
         timestamp_slug = time.strftime("%Y%m%d_%H%M%S")
-        csv_path = os.path.join(output_dir, f"Export_{timestamp_slug}.csv")
+        export_mode = mode or getattr(self, "current_mode", "viscometer")
+        csv_path = os.path.join(output_dir, f"Export_{export_mode.capitalize()}_{timestamp_slug}.csv")
         
-        self._get_engine().export_to_csv(rows, csv_path, mode="viscometer")
+        self._get_engine().export_to_csv(rows, csv_path, mode=export_mode, selected_columns=selected_columns)
         return {"success": True, "file_path": csv_path}
+
+    def test_template_ocr(self, image_b64, sub_rois):
+        """
+        Ejecuta inferencia OCR en vivo sobre cada Sub-ROI definido en el Constructor Visual de Plantillas.
+        Devuelve el valor reconocido, texto crudo, confianza (%) y coordenadas.
+        """
+        try:
+            if not image_b64:
+                return {"error": "No se proporcionó imagen de referencia."}
+
+            if ',' in image_b64:
+                image_b64 = image_b64.split(',', 1)[1]
+
+            import base64
+            import numpy as np
+            import re
+            from core.preprocessor import ImagePreprocessor
+
+            img_bytes = base64.b64decode(image_b64)
+            np_arr = np.frombuffer(img_bytes, np.uint8)
+            frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+            if frame is None or frame.size == 0:
+                return {"error": "No se pudo decodificar la imagen de referencia."}
+
+            h, w = frame.shape[:2]
+            engine = self._get_engine()
+            results = []
+
+            for sroi in sub_rois:
+                sroi_id = sroi.get("id", "roi_unknown")
+                sroi_name = sroi.get("name") or sroi.get("display_label", "Variable")
+                unit = sroi.get("unit", "")
+                data_type = sroi.get("data_type") or sroi.get("dataType", "float")
+                min_bound = sroi.get("min")
+                max_bound = sroi.get("max")
+
+                rx = float(sroi.get("x", 0))
+                ry = float(sroi.get("y", 0))
+                rw = float(sroi.get("w", 0))
+                rh = float(sroi.get("h", 0))
+
+                if rx <= 1.0 and ry <= 1.0 and rw <= 1.0 and rh <= 1.0:
+                    px = int(rx * w)
+                    py = int(ry * h)
+                    pw = int(rw * w)
+                    ph = int(rh * h)
+                else:
+                    px, py, pw, ph = int(rx), int(ry), int(rw), int(rh)
+
+                px = max(0, min(px, w - 1))
+                py = max(0, min(py, h - 1))
+                pw = max(5, min(pw, w - px))
+                ph = max(5, min(ph, h - py))
+
+                crop = frame[py:py+ph, px:px+pw]
+                if crop.size == 0:
+                    continue
+
+                processed = ImagePreprocessor.process(crop, profile="normal")
+                ocr_output = engine.reader.readtext(processed)
+
+                raw_parts = []
+                conf_parts = []
+                for bbox, text, conf in ocr_output:
+                    clean = text.strip()
+                    if clean:
+                        raw_parts.append(clean)
+                        conf_parts.append(float(conf))
+
+                raw_text = " ".join(raw_parts).strip()
+                avg_conf = float(np.mean(conf_parts)) if conf_parts else 0.0
+
+                parsed_val = raw_text
+                is_bad = avg_conf < 0.40 or len(raw_text) == 0
+
+                if data_type in ("float", "decimal"):
+                    clean_v = raw_text.replace('i', '1').replace('l', '1').replace('I', '1')
+                    clean_v = clean_v.replace('o', '0').replace('O', '0').replace('s', '5').replace('S', '5')
+                    clean_v = clean_v.replace(',', '.')
+                    num_match = re.search(r'[-+]?\d*\.?\d+', clean_v)
+                    if num_match:
+                        try:
+                            parsed_val = float(num_match.group(0))
+                        except ValueError:
+                            parsed_val = raw_text
+                            is_bad = True
+                    else:
+                        is_bad = True
+                elif data_type in ("int", "entero"):
+                    clean_v = raw_text.replace('i', '1').replace('l', '1').replace('I', '1')
+                    clean_v = clean_v.replace('o', '0').replace('O', '0').replace('s', '5').replace('S', '5')
+                    num_match = re.search(r'[-+]?\d+', clean_v)
+                    if num_match:
+                        try:
+                            parsed_val = int(num_match.group(0))
+                        except ValueError:
+                            parsed_val = raw_text
+                            is_bad = True
+                    else:
+                        is_bad = True
+
+                warning = None
+                if isinstance(parsed_val, (int, float)):
+                    if min_bound is not None and str(min_bound).strip() != "":
+                        try:
+                            if parsed_val < float(min_bound):
+                                is_bad = True
+                                warning = f"Valor {parsed_val} inferior al mínimo ({min_bound})"
+                        except ValueError:
+                            pass
+                    if max_bound is not None and str(max_bound).strip() != "":
+                        try:
+                            if parsed_val > float(max_bound):
+                                is_bad = True
+                                warning = f"Valor {parsed_val} superior al máximo ({max_bound})"
+                        except ValueError:
+                            pass
+
+                results.append({
+                    "id": sroi_id,
+                    "name": sroi_name,
+                    "unit": unit,
+                    "raw_text": raw_text,
+                    "parsed_value": parsed_val,
+                    "confidence": round(avg_conf, 3),
+                    "confidence_pct": round(avg_conf * 100, 1),
+                    "is_bad": is_bad,
+                    "warning": warning,
+                    "box": [px, py, pw, ph]
+                })
+
+            return {"success": True, "results": results}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def save_custom_template(self, template_data):
+        """Guarda una plantilla personalizada .lvtemplate en disco."""
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            tpl_dir = os.path.join(base_dir, "templates", "custom")
+            os.makedirs(tpl_dir, exist_ok=True)
+            
+            meta = template_data.get("metadata", {})
+            tpl_id = meta.get("template_id") or f"template_{int(time.time())}"
+            filename = f"{tpl_id}.lvtemplate"
+            file_path = os.path.join(tpl_dir, filename)
+            
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(template_data, f, indent=2, ensure_ascii=False)
+            
+            return {"success": True, "file_path": file_path, "template_id": tpl_id}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def load_custom_templates(self):
+        """Carga y devuelve la lista de plantillas personalizadas guardadas."""
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            tpl_dir = os.path.join(base_dir, "templates", "custom")
+            if not os.path.exists(tpl_dir):
+                return []
+            templates = []
+            for fname in os.listdir(tpl_dir):
+                if fname.endswith(".lvtemplate") or fname.endswith(".json"):
+                    p = os.path.join(tpl_dir, fname)
+                    try:
+                        with open(p, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            templates.append(data)
+                    except Exception:
+                        pass
+            return templates
+        except Exception:
+            return []
+
+    def export_template_dialog(self, template_json_str, suggested_name="plantilla.lvtemplate"):
+        """Diálogo nativo para exportar .lvtemplate."""
+        if not self._window:
+            return {"error": "Ventana no disponible"}
+        try:
+            file_types = ('Plantilla LabVision (*.lvtemplate)', 'Archivo JSON (*.json)', 'Todos los archivos (*.*)')
+            save_path = self._window.create_file_dialog(
+                webview.SAVE_DIALOG,
+                save_filename=suggested_name,
+                file_types=file_types
+            )
+            if save_path:
+                if isinstance(save_path, (list, tuple)):
+                    save_path = save_path[0]
+                with open(save_path, "w", encoding="utf-8") as f:
+                    f.write(template_json_str)
+                return {"success": True, "file_path": save_path}
+            return {"cancelled": True}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def import_template_dialog(self):
+        """Diálogo nativo para importar .lvtemplate."""
+        if not self._window:
+            return {"error": "Ventana no disponible"}
+        try:
+            file_types = ('Plantillas LabVision (*.lvtemplate;*.json)', 'Todos los archivos (*.*)')
+            res = self._window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
+            if res and len(res) > 0:
+                with open(res[0], "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return {"success": True, "template": data, "file_path": res[0]}
+            return {"cancelled": True}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def take_screenshot(self, name_prefix="labvision_ux"):
+        """Captura de pantalla de alta resolución para supervisión de UX y validación de diseño."""
+        try:
+            from PIL import ImageGrab
+            screenshots_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "screenshots")
+            os.makedirs(screenshots_dir, exist_ok=True)
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"{name_prefix}_{timestamp}.png"
+            dest_path = os.path.join(screenshots_dir, filename)
+            
+            img = ImageGrab.grab()
+            img.save(dest_path, "PNG")
+            print(f"[LabVision] Captura UX guardada: {dest_path}")
+            return {"success": True, "path": dest_path, "filename": filename}
+        except Exception as e:
+            print(f"[LabVision] Error al capturar pantalla: {e}")
+            return {"success": False, "error": str(e)}
+
+    def check_for_updates(self):
+        """Consulta GitHub Releases para comprobar si hay actualizaciones disponibles."""
+        try:
+            from core.updater import GitHubUpdater
+            updater = GitHubUpdater(current_version="0.8.0")
+            if not asset_url:
+                check = updater.check_updates()
+                asset_url = check.get("asset_url")
+                if not asset_url:
+                    return {"success": False, "error": "No se encontró instalador en GitHub."}
+            return updater.check_updates()
+        except Exception as e:
+            return {"online": False, "update_available": False, "error": str(e)}
+
+    def download_and_install_update(self, asset_url=None):
+        """Descarga e inicia la actualización automática de LabVision."""
+        try:
+            from core.updater import GitHubUpdater
+            updater = GitHubUpdater(current_version="0.8.0")
+            dest_file = updater.download_update_stream(asset_url)
+            updater.apply_update(dest_file, silent=False)
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     def open_browser(self, url="https://github.com/NachoFari"):
         """Abre un enlace web externo en el navegador predeterminado del sistema."""

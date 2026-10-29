@@ -125,5 +125,5 @@ class LabVisionEngine:
     def export_to_excel(self, data_rows, output_path, mode="viscometer", metadata=None):
         return ExcelExporter.export(data_rows, output_path, mode=mode, metadata=metadata)
 
-    def export_to_csv(self, data_rows, output_path, mode="viscometer", metadata=None):
-        return CSVExporter.export(data_rows, output_path, mode=mode, metadata=metadata)
+    def export_to_csv(self, data_rows, output_path, mode="viscometer", metadata=None, selected_columns=None):
+        return CSVExporter.export(data_rows, output_path, mode=mode, metadata=metadata, selected_columns=selected_columns)

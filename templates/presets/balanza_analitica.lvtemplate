@@ -1,0 +1,42 @@
+{
+  "$schema": "https://labvision.org/schemas/v1/template.json",
+  "lvtemplate_version": "1.0",
+  "metadata": {
+    "template_id": "balance_analytical",
+    "name": "Balanza Analítica (Ohaus / Mettler)",
+    "description": "Plantilla estándar de fábrica para balanza analítica y de precisión",
+    "author": "NachoFari",
+    "institution": "Laboratorio Analítico Central",
+    "created_at": "2026-10-28T12:00:00Z",
+    "compatible_hardware": ["Ohaus Pioneer", "Mettler Toledo ME", "Sartorius Entris"]
+  },
+  "display_profile": {
+    "type": "lcd_reflective",
+    "preprocessing": {
+      "grayscale": true,
+      "clahe": false,
+      "threshold_mode": "otsu_adaptive",
+      "invert_polarity": false,
+      "noise_kernel_size": 3
+    }
+  },
+  "sub_rois": [
+    {
+      "id": "weight",
+      "display_label": "Masa / Peso",
+      "unit": "g",
+      "coordinates_relative": { "x": 0.15, "y": 0.20, "w": 0.70, "h": 0.50 },
+      "data_type": "float",
+      "decimal_places": 4,
+      "valid_range": [0.0000, 500.0000],
+      "ocr_whitelist": "0123456789.-"
+    }
+  ],
+  "streaming_export": {
+    "default_sample_interval_sec": 1.0,
+    "csv_columns": ["Tiempo_seg", "Timestamp", "Peso_g", "Unidad", "Confianza_Pct", "Estado"]
+  },
+  "live_chart": {
+    "primary_series": { "field_id": "weight", "color": "#10b981", "chart_type": "line" }
+  }
+}
