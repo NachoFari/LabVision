@@ -95,29 +95,22 @@
     </div>
   </div>
 
-  <!-- ================= TOPBAR ================= -->
-  <header class="bg-lab-card border-b border-lab-border px-5 py-2.5 flex items-center justify-between shrink-0 shadow-lg z-30">
-    <div class="flex items-center space-x-3">
+    <!-- ================= TOPBAR ================= -->
+  <header class="bg-lab-card border-b border-lab-border px-3.5 sm:px-5 py-2 flex items-center justify-between shrink-0 shadow-lg z-30 gap-2 overflow-x-hidden">
+    <div class="flex items-center space-x-2.5 shrink-0">
       <!-- Matraz Erlenmeyer de Laboratorio (100% Pixel Art Nítido) -->
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 flex items-center justify-center shadow-md shadow-brand-500/20">
-        <svg class="w-6 h-6 text-white" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
-          <!-- Cuello y boca del matraz -->
+      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 flex items-center justify-center shadow-md shadow-brand-500/20 shrink-0">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="6" y="1" width="4" height="1" fill="#ffffff"/>
           <rect x="7" y="2" width="2" height="4" fill="#ffffff"/>
-          
-          <!-- Cuerpo cónico del matraz (vidrio exterior) -->
           <rect x="6" y="6" width="4" height="1" fill="#ffffff"/>
           <rect x="5" y="7" width="6" height="2" fill="#ffffff"/>
           <rect x="4" y="9" width="8" height="2" fill="#ffffff"/>
           <rect x="3" y="11" width="10" height="2" fill="#ffffff"/>
           <rect x="2" y="13" width="12" height="2" fill="#ffffff"/>
-          
-          <!-- Líquido químico interior (Cian / Azul) -->
           <rect x="5" y="9" width="6" height="1" fill="#38bdf8"/>
           <rect x="4" y="10" width="8" height="2" fill="#0284c7"/>
           <rect x="3" y="12" width="10" height="2" fill="#0369a1"/>
-          
-          <!-- Burbujas y brillo del matraz -->
           <rect x="5" y="11" width="1" height="1" fill="#ffffff"/>
           <rect x="9" y="12" width="1" height="1" fill="#ffffff"/>
           <rect x="6" y="7" width="1" height="2" fill="#bae6fd"/>
@@ -126,30 +119,29 @@
       </div>
       <div>
         <div class="flex items-center space-x-2">
-          <h1 class="text-base font-bold tracking-tight text-white">LabVision</h1>
-          <span class="text-[10px] px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v0.8</span>
+          <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">LabVision</h1>
+          <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v0.8</span>
         </div>
-        <p class="text-[11px] text-slate-400" data-i18n="app_subtitle">Digitalización de Pantallas de Laboratorio a Excel & CSV</p>
+        <p class="text-[10px] sm:text-[11px] text-slate-400 hidden 2xl:block" data-i18n="app_subtitle">Digitalización de Pantallas de Laboratorio a Excel & CSV</p>
       </div>
     </div>
 
-    <!-- ================= SELECTOR DE INSTRUMENTOS PREDEFINIDOS Y PLANTILLAS (WP5) ================= -->
-    <div class="flex items-center space-x-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1 shadow-inner">
-      <div class="flex items-center space-x-1.5 mr-1">
+    <!-- ================= SELECTOR DE INSTRUMENTOS PREDEFINIDOS Y PLANTILLAS ================= -->
+    <div class="flex items-center space-x-1 sm:space-x-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2 py-1 shadow-inner shrink-0">
+      <div class="flex items-center space-x-1 mr-0.5">
         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden xl:inline">Instrumento:</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden 2xl:inline">Instrumento:</span>
       </div>
-      <select id="preset-instrument-select" onchange="handlePresetChange(this.value)" class="bg-slate-800 text-cyan-300 font-semibold text-xs rounded-lg px-2.5 py-1 border border-slate-700 hover:border-cyan-500 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-sm transition-colors">
+      <select id="preset-instrument-select" onchange="handlePresetChange(this.value)" class="bg-slate-800 text-cyan-300 font-semibold text-xs rounded-lg px-2 py-1 border border-slate-700 hover:border-cyan-500 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-sm transition-colors max-w-[150px] sm:max-w-[210px] truncate">
         <optgroup label="── Instrumentos Predefinidos ──">
           <option value="viscometer" selected>Viscosímetro Digital (NDJ-8S)</option>
           <option value="balance">Balanza Analítica</option>
         </optgroup>
         <optgroup id="optgroup-custom-templates" label="── Plantillas Personalizadas ──" class="hidden">
-          <!-- Poblado dinámicamente -->
         </optgroup>
         <optgroup label="── Acciones de Plantilla ──">
-          <option value="__new_template__">➕ Diseñar Nueva Plantilla Personalizada...</option>
-          <option value="__import_template__">📂 Importar Plantilla (.lvtemplate)...</option>
+          <option value="__new_template__">➕ Diseñar Nueva Plantilla...</option>
+          <option value="__import_template__">📂 Importar (.lvtemplate)...</option>
         </optgroup>
       </select>
       <button type="button" onclick="openTemplateBuilder()" title="Abrir Constructor No-Code de Plantillas" class="px-2 py-1 rounded-lg bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-700/70 text-cyan-300 text-xs font-semibold flex items-center space-x-1 transition-all shadow-sm">
@@ -160,7 +152,7 @@
           <rect x="11" y="9" width="1" height="5"/>
           <rect x="9" y="11" width="5" height="1"/>
         </svg>
-        <span class="hidden lg:inline text-[11px]">+ Diseñar</span>
+        <span class="hidden xl:inline text-[11px]">+ Diseñar</span>
       </button>
       <button type="button" onclick="importTemplateFile()" title="Importar archivo .lvtemplate" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs transition-colors">
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
@@ -171,18 +163,18 @@
     </div>
 
     <!-- PESTAÑAS DE PANTALLA / MODOS DE VISTA PRINCIPALES -->
-    <nav class="flex items-center bg-slate-900/80 p-1 rounded-xl border border-slate-800 space-x-1">
-      <button id="nav-btn-live" onclick="switchScreen('live')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-600 text-white shadow-sm">
+    <nav class="flex items-center bg-slate-900/80 p-1 rounded-xl border border-slate-800 space-x-1 shrink-0">
+      <button id="nav-btn-live" onclick="switchScreen('live')" title="Captura en Vivo" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-600 text-white shadow-sm">
         <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="2" y="2" width="12" height="9"/>
           <rect x="4" y="4" width="8" height="5" fill="#0f172a"/>
           <rect x="6" y="12" width="4" height="1"/>
           <rect x="4" y="13" width="8" height="1"/>
         </svg>
-        <span data-i18n="nav_live">Captura en Vivo</span>
+        <span data-i18n="nav_live" class="hidden xl:inline">Captura en Vivo</span>
       </button>
 
-      <button id="nav-btn-chart" onclick="switchScreen('chart')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+      <button id="nav-btn-chart" onclick="switchScreen('chart')" title="Gráficos en Vivo" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
         <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="1" y="1" width="1" height="14"/>
           <rect x="1" y="14" width="14" height="1"/>
@@ -191,20 +183,20 @@
           <rect x="9" y="4" width="2" height="9" fill="#38bdf8"/>
           <rect x="12" y="2" width="2" height="11" fill="#38bdf8"/>
         </svg>
-        <span data-i18n="nav_chart">Gráficos en Vivo</span>
+        <span data-i18n="nav_chart" class="hidden xl:inline">Gráficos</span>
       </button>
 
-      <button id="nav-btn-history" onclick="switchScreen('history')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+      <button id="nav-btn-history" onclick="switchScreen('history')" title="Base de Datos" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
         <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="3" y="2" width="10" height="12"/>
           <rect x="5" y="4" width="6" height="1" fill="#0f172a"/>
           <rect x="5" y="7" width="6" height="1" fill="#0f172a"/>
           <rect x="5" y="10" width="6" height="1" fill="#0f172a"/>
         </svg>
-        <span>Base de Datos</span>
+        <span class="hidden xl:inline">Base de Datos</span>
       </button>
 
-      <button id="nav-btn-calibration" onclick="switchScreen('calibration')" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+      <button id="nav-btn-calibration" onclick="switchScreen('calibration')" title="Calibración de Cámara" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
         <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="7" y="7" width="2" height="2"/>
           <rect x="7" y="2" width="2" height="3"/>
@@ -212,19 +204,19 @@
           <rect x="2" y="7" width="3" height="2"/>
           <rect x="11" y="7" width="3" height="2"/>
         </svg>
-        <span data-i18n="nav_calibration">Calibración</span>
+        <span data-i18n="nav_calibration" class="hidden xl:inline">Calibración</span>
       </button>
     </nav>
 
     <!-- Menús y Controles de la Barra Superior -->
-    <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
       <!-- Badge de Hardware (CPU vs GPU) -->
-      <div id="hw-badge" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs">
+      <div id="hw-badge" class="flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-xs">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="hw-text" class="text-slate-300 font-medium text-[11px]">Hardware</span>
+        <span id="hw-text" class="text-slate-300 font-medium text-[11px] hidden 2xl:inline">Hardware</span>
       </div>
 
-            <!-- BOTÓN CAPTURA DE PANTALLA UX (F9) -->
+      <!-- BOTÓN CAPTURA DE PANTALLA UX (F9) -->
       <button onclick="takeScreenshotUI()" title="Tomar captura de pantalla de la interfaz (F9 / Botón)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-cyan-300 transition-colors">
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
           <rect x="5" y="2" width="6" height="2"/>
@@ -236,13 +228,12 @@
 
       <!-- SELECTOR DE IDIOMA (ES / EN) -->
       <div class="flex items-center bg-slate-800/80 border border-slate-700 rounded-lg p-0.5 text-[10px] font-bold">
-        <button id="btn-lang-es" onclick="applyLanguage('es')" class="px-2 py-0.5 rounded text-white bg-cyan-600 transition-colors">ES</button>
-        <button id="btn-lang-en" onclick="applyLanguage('en')" class="px-2 py-0.5 rounded text-slate-400 hover:text-white transition-colors">EN</button>
+        <button id="btn-lang-es" onclick="applyLanguage('es')" class="px-1.5 sm:px-2 py-0.5 rounded text-white bg-cyan-600 transition-colors">ES</button>
+        <button id="btn-lang-en" onclick="applyLanguage('en')" class="px-1.5 sm:px-2 py-0.5 rounded text-slate-400 hover:text-white transition-colors">EN</button>
       </div>
 
       <!-- BOTÓN AJUSTES Y PERSONALIZACIÓN (Temas, Escala, Sonidos) -->
-      <button onclick="openSettingsModal()" title="Menú de Ajustes: Temas (Oscuro/Claro/OLED), Sonido y Fuentes" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-colors">
-        <!-- Pixel Art Cog / Gear -->
+      <button onclick="openSettingsModal()" title="Menú de Ajustes: Temas, Sonido, Fuentes y Actualizaciones" class="flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-colors">
         <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
           <rect x="6" y="1" width="4" height="2"/>
           <rect x="6" y="13" width="4" height="2"/>
@@ -255,29 +246,24 @@
           <rect x="4" y="4" width="8" height="8"/>
           <rect x="6" y="6" width="4" height="4" fill="#0b0f19"/>
         </svg>
-        <span data-i18n="nav_settings">Ajustes</span>
+        <span data-i18n="nav_settings" class="hidden sm:inline">Ajustes</span>
       </button>
 
       <!-- Botón Modo Tutorial (Librito de Ayuda) -->
       <button onclick="openTutorialModal()" title="Guía de uso rápido" class="p-1.5 rounded-lg bg-sky-950/60 hover:bg-sky-900/60 border border-sky-700/60 text-sky-300 transition-colors">
         <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
-          <!-- Portada azul -->
           <rect x="1" y="3" width="14" height="11" fill="#0284c7"/>
           <rect x="1" y="4" width="1" height="9" fill="#0369a1"/>
           <rect x="14" y="4" width="1" height="9" fill="#0369a1"/>
-          <!-- Páginas abiertas blancas -->
           <rect x="2" y="4" width="5" height="8" fill="#f8fafc"/>
           <rect x="9" y="4" width="5" height="8" fill="#f8fafc"/>
-          <!-- Lomo central -->
           <rect x="7" y="3" width="2" height="10" fill="#0f172a"/>
-          <!-- Líneas de texto del libro -->
           <rect x="3" y="6" width="3" height="1" fill="#64748b"/>
           <rect x="3" y="8" width="3" height="1" fill="#64748b"/>
           <rect x="3" y="10" width="3" height="1" fill="#64748b"/>
           <rect x="10" y="6" width="3" height="1" fill="#64748b"/>
           <rect x="10" y="8" width="3" height="1" fill="#64748b"/>
           <rect x="10" y="10" width="3" height="1" fill="#64748b"/>
-          <!-- Cinta de marcador roja -->
           <rect x="7" y="12" width="2" height="3" fill="#ef4444"/>
         </svg>
       </button>
@@ -294,11 +280,12 @@
         </svg>
       </button>
 
-      <!-- SELLO PERSONAL: Creado por NachoFari con su Zorro Naranja Pixel Art -->
-      <a href="https://github.com/NachoFari" target="_blank" onclick="openGitHubProfile(event)" title="Visitar GitHub de NachoFari • https://github.com/NachoFari" class="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-gradient-to-r from-orange-500/15 to-amber-500/10 hover:from-orange-500/25 hover:to-amber-500/20 border border-orange-500/40 text-orange-200 text-xs font-semibold shadow-sm transition-all group cursor-pointer no-underline">
-        <img src="fox_32.png" alt="Zorro NachoFari" class="w-6 h-6 pixel-art group-hover:scale-110 group-hover:rotate-6 transition-transform" style="image-rendering: pixelated; shape-rendering: crispEdges;">
-        <span class="text-xs text-orange-100 font-bold tracking-tight">Creado por NachoFari</span>
-        <svg class="w-3 h-3 text-orange-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+      <!-- SELLO PERSONAL: Creado por NachoFari con Zorro Naranja Pixel Art -->
+      <a href="https://github.com/NachoFari" target="_blank" onclick="openGitHubProfile(event)" title="Visitar GitHub de NachoFari • https://github.com/NachoFari" class="flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-gradient-to-r from-orange-500/15 to-amber-500/10 hover:from-orange-500/25 hover:to-amber-500/20 border border-orange-500/40 text-orange-200 text-xs font-semibold shadow-sm transition-all group cursor-pointer no-underline">
+        <img src="fox_32.png" alt="Zorro NachoFari" class="w-5 h-5 sm:w-6 sm:h-6 pixel-art group-hover:scale-110 group-hover:rotate-6 transition-transform" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+        <span class="text-xs text-orange-100 font-bold tracking-tight hidden 2xl:inline">Creado por NachoFari</span>
+        <span class="text-xs text-orange-100 font-bold tracking-tight hidden lg:inline 2xl:hidden">NachoFari</span>
+        <svg class="w-3 h-3 text-orange-400 group-hover:translate-x-0.5 transition-transform hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
       </a>
     </div>
   </header>
@@ -342,34 +329,10 @@
         <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-900 text-amber-300 font-bold border border-amber-700">En Curso</span>
       </div>
 
-      <!-- PESTAÑAS DE INSTRUMENTO -->
-      <div class="bg-lab-card border border-lab-border rounded-xl p-1.5 flex space-x-1.5 shadow-sm">
-        <button id="tab-viscometer" onclick="switchMode('viscometer')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm">
-          <svg class="w-4 h-4 text-cyan-200" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
-            <rect x="5" y="1" width="6" height="2"/>
-            <rect x="6" y="3" width="4" height="2"/>
-            <rect x="5" y="5" width="6" height="7"/>
-            <rect x="6" y="8" width="4" height="4" fill="#0284c7"/>
-            <rect x="7" y="6" width="2" height="1" fill="#bae6fd"/>
-            <rect x="6" y="12" width="4" height="2"/>
-            <rect x="7" y="14" width="2" height="1"/>
-          </svg>
-          <span>Viscosímetro (NDJ-8S)</span>
-        </button>
-        <button id="tab-balance" onclick="switchMode('balance')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
-          <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
-            <rect x="2" y="2" width="12" height="2"/>
-            <rect x="7" y="1" width="2" height="12"/>
-            <rect x="2" y="4" width="1" height="4"/>
-            <rect x="5" y="4" width="1" height="4"/>
-            <rect x="1" y="8" width="6" height="2"/>
-            <rect x="10" y="4" width="1" height="4"/>
-            <rect x="13" y="4" width="1" height="4"/>
-            <rect x="9" y="8" width="6" height="2"/>
-            <rect x="4" y="13" width="8" height="2"/>
-          </svg>
-          <span>Balanza de Precisión</span>
-        </button>
+            <!-- PESTAÑAS DE INSTRUMENTO (Unificadas en barra superior) -->
+      <div id="dashboard-instrument-selector" class="hidden">
+        <button id="tab-viscometer" onclick="switchMode('viscometer')"></button>
+        <button id="tab-balance" onclick="switchMode('balance')"></button>
       </div>
 
       <!-- SECCIÓN 1: SELECCIÓN DE FUENTE -->
@@ -876,46 +839,66 @@
     </div>
   </section>
 
-  <!-- ================= MODAL DE AJUSTES Y PERSONALIZACIÓN ================= -->
-  <div id="modal-settings" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-lab-card border border-lab-border rounded-2xl w-full max-w-xl p-6 space-y-5 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-lab-border pb-3">
-        <div class="flex items-center space-x-2">
-          <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
-            <rect x="6" y="1" width="4" height="2"/>
-            <rect x="6" y="13" width="4" height="2"/>
-            <rect x="1" y="6" width="2" height="4"/>
-            <rect x="13" y="6" width="2" height="4"/>
-            <rect x="3" y="3" width="2" height="2"/>
-            <rect x="11" y="3" width="2" height="2"/>
-            <rect x="3" y="11" width="2" height="2"/>
-            <rect x="11" y="11" width="2" height="2"/>
-            <rect x="4" y="4" width="8" height="8"/>
-            <rect x="6" y="6" width="4" height="4" fill="#0b0f19"/>
-          </svg>
-          <h3 class="text-base font-bold text-white">Menú de Ajustes y Personalización</h3>
+    <!-- ================= MODAL DE AJUSTES Y PERSONALIZACIÓN ================= -->
+  <div id="modal-settings" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="bg-lab-card border border-lab-border rounded-2xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+      <!-- Encabezado fijo -->
+      <div class="flex items-center justify-between border-b border-lab-border p-4 sm:p-5 shrink-0 bg-slate-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-800 flex items-center justify-center">
+            <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges;">
+              <rect x="6" y="1" width="4" height="2"/>
+              <rect x="6" y="13" width="4" height="2"/>
+              <rect x="1" y="6" width="2" height="4"/>
+              <rect x="13" y="6" width="2" height="4"/>
+              <rect x="3" y="3" width="2" height="2"/>
+              <rect x="11" y="3" width="2" height="2"/>
+              <rect x="3" y="11" width="2" height="2"/>
+              <rect x="11" y="11" width="2" height="2"/>
+              <rect x="4" y="4" width="8" height="8"/>
+              <rect x="6" y="6" width="4" height="4" fill="#0b0f19"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Menú de Ajustes y Personalización</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400">Preferencias globales del sistema y apariencia de laboratorio</p>
+          </div>
         </div>
-        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-colors">✕</button>
       </div>
 
-      <div class="space-y-4 text-xs">
-        <!-- 1. IDIOMA Y TEMAS VISUALES NATEX (21 TEMAS) -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">1. Tema Visual y Mascota (NaTex Themes)</label>
-            <div class="flex items-center space-x-1.5">
-              <span class="text-[10px] text-slate-400">Idioma:</span>
-              <button type="button" onclick="applyLanguage('es')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-600 text-white">ES</button>
-              <button type="button" onclick="applyLanguage('en')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 hover:text-white">EN</button>
+      <!-- Cuerpo deslizable con scroll interior -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-4 text-xs">
+        <!-- 1. TEMAS VISUALES Y APARIENCIA (BOTÓN A MODAL DEDICADO) -->
+        <div class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between shadow-inner">
+          <div class="flex items-center space-x-3">
+            <div id="settings-theme-preview-box" class="w-9 h-9 rounded-xl bg-cyan-950/90 border border-cyan-800 flex items-center justify-center text-cyan-400 text-base shadow-sm">
+              🔬
+            </div>
+            <div>
+              <label class="block font-bold uppercase tracking-wider text-white text-[11px]">1. Temas Visuales y Mascotas</label>
+              <p class="text-[11px] text-slate-400">21 estilos de color (LabVision Clásico, Zorro, Matcha, etc.)</p>
             </div>
           </div>
-          <p class="text-[10px] text-slate-400 mb-2">Selecciona entre los 20 temas de diseño de NaTex con mascotas pixel art:</p>
-          <div id="themeSelectorGrid" class="theme-selector-grid custom-scrollbar bg-slate-950/60 p-2 rounded-xl border border-slate-800">
-            <!-- Renderizado dinámico de los 21 temas por theme_catalog.js -->
+          <button type="button" onclick="openThemesModal()" class="px-3.5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer">
+            <span>🎨 Temas</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M6 3l5 5-5 5V3z"/></svg>
+          </button>
+        </div>
+
+        <!-- 2. IDIOMA DEL SISTEMA -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/80">
+          <div>
+            <span class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">Idioma de la Interfaz</span>
+            <span class="text-[10px] text-slate-400">Selecciona español o inglés para todo el sistema</span>
+          </div>
+          <div class="flex items-center space-x-1.5 bg-slate-800/80 p-0.5 rounded-lg border border-slate-700">
+            <button type="button" onclick="applyLanguage('es')" class="px-2.5 py-1 rounded text-xs font-bold bg-cyan-600 text-white">Español (ES)</button>
+            <button type="button" onclick="applyLanguage('en')" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:text-white">English (EN)</button>
           </div>
         </div>
 
-        <!-- 2. TIPOGRAFÍA Y ESCALA -->
+        <!-- 3. TIPOGRAFÍA Y ESCALA -->
         <div class="pt-2 border-t border-slate-800">
           <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-2">2. Escala de Lectura y Fuentes</label>
           <div class="grid grid-cols-2 gap-2">
@@ -928,7 +911,7 @@
           </div>
         </div>
 
-        <!-- 3. DENSIDAD DE TABLA -->
+        <!-- 4. DENSIDAD DE TABLA -->
         <div class="pt-2 border-t border-slate-800">
           <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px] mb-2">3. Densidad de Filas de la Tabla</label>
           <div class="grid grid-cols-2 gap-2">
@@ -941,7 +924,7 @@
           </div>
         </div>
 
-        <!-- 4. ALERTAS SONORAS DE LABORATORIO -->
+        <!-- 5. ALERTAS SONORAS DE LABORATORIO -->
         <div class="pt-2 border-t border-slate-800 space-y-2.5">
           <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">4. Audio y Pitidos Sintetizados (Web Audio API)</label>
           
@@ -964,7 +947,7 @@
           </div>
         </div>
 
-        <!-- 5. RESPALDO AUTOMÁTICO (PROTECCIÓN CONTRA APAGONES) -->
+        <!-- 6. RESPALDO AUTOMÁTICO (PROTECCIÓN CONTRA APAGONES) -->
         <div class="pt-2 border-t border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <div>
@@ -988,7 +971,7 @@
         <div class="pt-2 border-t border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <div>
-              <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">7. Actualizaciones de GitHub & Evaluador UX</label>
+              <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">6. Actualizaciones de GitHub & Evaluador UX</label>
               <p class="text-[10px] text-slate-400">Verifica nuevas versiones oficiales o realiza capturas de pantalla.</p>
             </div>
             <span id="updater-status-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">v0.8.0</span>
@@ -1010,11 +993,11 @@
           <div id="updater-feedback" class="hidden text-[11px] p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300"></div>
         </div>
 
-        <!-- 6. PANTALLA DE INICIO (SPLASH SCREEN RIOT STYLE) -->
+        <!-- 8. PANTALLA DE INICIO (SPLASH SCREEN) -->
         <div class="pt-2 border-t border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <div>
-              <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">6. Pantalla de Bienvenida</label>
+              <label class="block font-bold uppercase tracking-wider text-slate-300 text-[11px]">7. Pantalla de Bienvenida</label>
               <p class="text-[10px] text-slate-400">Presentación animada de inicio con estilo Riot Client.</p>
             </div>
             <button type="button" onclick="closeSettingsModal(); replaySplashIntro();" class="px-3.5 py-1.5 rounded-lg bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm">
@@ -1025,10 +1008,70 @@
         </div>
       </div>
 
-      <div class="flex justify-end pt-3 border-t border-lab-border">
-        <button onclick="closeSettingsModal()" class="px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs transition-colors">
-          Guardar y Aplicar
+      <!-- Pie de diálogo fijo -->
+      <div class="border-t border-lab-border p-3.5 shrink-0 flex items-center justify-end bg-slate-950/60">
+        <button type="button" onclick="closeSettingsModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs transition-colors">
+          Cerrar Ajustes
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DEDICADO DE TEMAS VISUALES (NATEX & LABVISION) ================= -->
+  <div id="modal-themes" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-3 sm:p-5 hidden">
+    <div class="bg-lab-card border border-lab-border rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+      <div class="flex items-center justify-between border-b border-lab-border p-4 sm:p-5 shrink-0 bg-slate-950/40">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-800 flex items-center justify-center text-cyan-400 text-lg">
+            🎨
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Paleta de Temas Visuales (21 Estilos)</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400">Selecciona el diseño y mascota pixel art de laboratorio</p>
+          </div>
+        </div>
+        <button onclick="closeThemesModal()" class="w-7 h-7 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-colors">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[11px] text-slate-300 font-medium">Temas disponibles:</span>
+          <span class="text-[10px] text-cyan-400 font-mono">21 Temas Artesanales</span>
+        </div>
+        <div id="themeSelectorGrid" class="theme-selector-grid custom-scrollbar bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+          <!-- Renderizado dinámico de los 21 temas por theme_catalog.js -->
+        </div>
+      </div>
+
+      <div class="border-t border-lab-border p-3.5 shrink-0 flex items-center justify-between bg-slate-950/60">
+        <button type="button" onclick="closeThemesModal(); openSettingsModal();" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-semibold text-xs transition-colors flex items-center space-x-1.5">
+          <span>← Volver a Ajustes</span>
+        </button>
+        <button type="button" onclick="closeThemesModal()" class="px-4 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-sm transition-colors">
+          Aplicar y Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL DE DIÁLOGO PERSONALIZADO DE LABORATORIO (Reemplazo confirm() y alert()) ================= -->
+  <div id="modal-lab-dialog" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
+    <div class="bg-lab-card border border-lab-border rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-fade-in relative">
+      <div class="flex items-start space-x-3.5">
+        <div id="lab-dialog-icon-box" class="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+            <rect x="7" y="3" width="2" height="6"/>
+            <rect x="7" y="11" width="2" height="2"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0 pt-0.5">
+          <h3 id="lab-dialog-title" class="text-sm sm:text-base font-bold text-white tracking-tight leading-snug">Confirmación</h3>
+          <p id="lab-dialog-message" class="text-xs text-slate-300 mt-1.5 leading-relaxed break-words"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-800">
+        <button id="lab-dialog-btn-cancel" onclick="handleLabDialogAction(false)" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer">Cancelar</button>
+        <button id="lab-dialog-btn-confirm" onclick="handleLabDialogAction(true)" type="button" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 shadow-sm transition-colors cursor-pointer">Aceptar</button>
       </div>
     </div>
   </div>

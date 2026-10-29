@@ -2,6 +2,19 @@ import cv2
 import numpy as np
 import easyocr
 import os
+import torch
+
+# Optimización de concurrencia de CPU: evitar que PyTorch y OpenCV saturen el 100% de la CPU
+try:
+    torch.set_num_threads(2)
+    torch.set_num_interop_threads(2)
+except Exception:
+    pass
+
+try:
+    cv2.setNumThreads(2)
+except Exception:
+    pass
 
 from core.hardware import HardwareDetector
 from core.calibrator import CameraCalibrator

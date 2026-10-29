@@ -203,13 +203,13 @@
           if (res && res.image_base64) {
             this.setReferenceImage(res.image_base64);
           } else {
-            alert('No se pudo capturar el fotograma del video activo.');
+            this.showToast('No se pudo capturar el fotograma del video activo.');
           }
         }).catch(err => {
-          alert('Error al capturar fotograma: ' + err);
+          this.showToast('Error al capturar fotograma: ' + err);
         });
       } else {
-        alert('No hay ninguna fuente de video o cámara activa en este momento. Carga un video en la pantalla principal o sube una imagen de referencia.');
+        this.showToast('No hay ninguna fuente de video o cámara activa en este momento. Carga un video en la pantalla principal o sube una imagen de referencia.');
       }
     }
 
@@ -641,13 +641,29 @@
       this.render();
     }
 
-    clearAllSubRois() {
+    async clearAllSubRois() {
       if (this.currentTemplate.subRois.length === 0) return;
-      if (confirm('¿Deseas eliminar todos los Sub-ROIs creados?')) {
+      let ok = false;
+      if (typeof showLabConfirm === 'function') {
+        ok = await showLabConfirm({
+          title: '¿Eliminar todos los Sub-ROIs?',
+          message: '¿Estás seguro de que deseas eliminar todas las variables y regiones creadas en esta plantilla? Esta acción no se puede deshacer.',
+          confirmText: 'Sí, eliminar todo',
+          cancelText: 'Cancelar',
+          danger: true
+        });
+      } else {
+        ok = confirm('¿Deseas eliminar todos los Sub-ROIs creados?');
+      }
+
+      if (ok) {
         this.currentTemplate.subRois = [];
         this.selectedRoiId = null;
         this.renderSidebarList();
         this.render();
+        if (typeof showLabToast === 'function') {
+          showLabToast('Todas las variables y Sub-ROIs han sido eliminados.', 'info');
+        }
       }
     }
 
@@ -1033,12 +1049,12 @@
 
     async testTemplateOcr() {
       if (this.currentTemplate.subRois.length === 0) {
-        alert('Debes definir al menos un Sub-ROI sobre la imagen para probar el reconocimiento OCR.');
+        this.showToast('Debes definir al menos un Sub-ROI sobre la imagen para probar el reconocimiento OCR.');
         return;
       }
 
       if (!this.refImageBase64) {
-        alert('Carga una imagen de referencia o fotograma de video antes de probar.');
+        this.showToast('Carga una imagen de referencia o fotograma de video antes de probar.');
         return;
       }
 
@@ -1131,7 +1147,7 @@
 
       } catch (err) {
         console.error('[Builder] Error en test OCR:', err);
-        alert('Error ejecutando reconocimiento OCR: ' + err.message);
+        this.showToast('Error ejecutando reconocimiento OCR: ' + err.message);
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1148,7 +1164,7 @@
       const displayType = (dispSelect && dispSelect.value) || 'lcd_reflective';
 
       if (this.currentTemplate.subRois.length === 0) {
-        alert('Debes definir al menos una variable / Sub-ROI antes de guardar la plantilla.');
+        this.showToast('Debes definir al menos una variable / Sub-ROI antes de guardar la plantilla.');
         return;
       }
 
@@ -1191,7 +1207,7 @@
       const templateName = (nameInput && nameInput.value.trim()) || 'Plantilla_LabVision';
 
       if (this.currentTemplate.subRois.length === 0) {
-        alert('La plantilla no tiene variables para exportar.');
+        this.showToast('La plantilla no tiene variables para exportar.');
         return;
       }
 
@@ -1255,7 +1271,7 @@
           const data = JSON.parse(event.target.result);
           this.loadTemplateFromData(data);
         } catch (err) {
-          alert('Error: el archivo seleccionado no es un .lvtemplate o JSON válido.\n' + err.message);
+          this.showToast('Error: el archivo seleccionado no es un .lvtemplate o JSON válido.\n' + err.message);
         }
       };
       reader.readAsText(file);
@@ -1263,7 +1279,7 @@
 
     loadTemplateFromData(data) {
       if (!data || !data.sub_rois) {
-        alert('Estructura de plantilla inválida: faltan sub_rois.');
+        this.showToast('Estructura de plantilla inválida: faltan sub_rois.');
         return;
       }
 

@@ -1,11 +1,21 @@
 const NATEX_THEMES = [
     {
+        "id": "labvision",
+        "name_es": "LabVision Clásico",
+        "name_en": "Classic LabVision",
+        "mode": "dark",
+        "accent": "#38BDF8",
+        "bgPreview": "#0b0f19",
+        "emojiFallback": "🔬",
+        "svg": `<svg class="pixel-mascot-img" viewBox="0 0 16 16" fill="currentColor" style="shape-rendering: crispEdges; width: 28px; height: 28px;"><rect x="6" y="1" width="4" height="1" fill="#bae6fd"/><rect x="7" y="2" width="2" height="4" fill="#38bdf8"/><rect x="6" y="6" width="4" height="1" fill="#38bdf8"/><rect x="5" y="7" width="6" height="2" fill="#38bdf8"/><rect x="4" y="9" width="8" height="2" fill="#0284c7"/><rect x="3" y="11" width="10" height="2" fill="#0369a1"/><rect x="2" y="13" width="12" height="2" fill="#0c4a6e"/><rect x="5" y="10" width="6" height="2" fill="#38bdf8"/><rect x="6" y="12" width="3" height="1" fill="#ffffff"/></svg>`
+    },
+    {
         "id": "fox",
         "name_es": "Zorro Clásico",
         "name_en": "Classic Fox",
         "mode": "dark",
         "accent": "#FF6B35",
-        "bgPreview": "#101116",
+        "bgPreview": "#121318",
         "emojiFallback": "🦊",
         "svg": "<img class=\"pixel-mascot-img\" src=\"data:image/png;base64,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\" alt=\"Zorro Clásico\" draggable=\"false\">"
     },
@@ -379,7 +389,7 @@ if (typeof window !== 'undefined') {
                 });
             }
             const active = document.documentElement.getAttribute('data-theme') ||
-                           (typeof currentTheme !== 'undefined' ? currentTheme : 'fox');
+                           (typeof currentTheme !== 'undefined' ? currentTheme : 'labvision');
             updateThemeMascotIcons(active);
             renderThemeSelectorGrid(active);
         };

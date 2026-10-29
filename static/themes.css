@@ -7,18 +7,33 @@
    DEFINICIÓN DE VARIABLES CSS POR TEMA (20 TEMAS + ALIASES)
    ========================================================================== */
 
-/* 1. Fox - Zorro Clásico (Dark / Default) & Alias 'dark' */
-[data-theme="fox"],
-[data-theme="dark"] {
-    --bg-dark: #101116;
-    --bg-surface: #181a24;
-    --bg-elevated: #222533;
-    --border-color: #2a2e40;
-    --border-subtle: rgba(255, 255, 255, 0.08);
+/* 0. LabVision Clásico - Predeterminado (Dark / Azul Celeste de Laboratorio) */
+[data-theme="labvision"],
+[data-theme="dark"],
+[data-theme="classic"] {
+    --bg-dark: #0b0f19;
+    --bg-surface: #0f172a;
+    --bg-elevated: #1e293b;
+    --border-color: #334155;
+    --border-subtle: rgba(56, 189, 248, 0.12);
+    --fox-orange: #38bdf8;
+    --fox-orange-hover: #0ea5e9;
+    --fox-orange-glow: rgba(56, 189, 248, 0.35);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+/* 1. Fox - Zorro Clásico (Dark / Tonos Naranjas Cálidos de Laboratorio) */
+[data-theme="fox"] {
+    --bg-dark: #121318;
+    --bg-surface: #1a1c26;
+    --bg-elevated: #242738;
+    --border-color: #31364d;
+    --border-subtle: rgba(255, 107, 53, 0.12);
     --fox-orange: #FF6B35;
     --fox-orange-hover: #ff7e4a;
-    --fox-orange-glow: rgba(255, 107, 53, 0.3);
-    --text-main: #f3f4f8;
+    --fox-orange-glow: rgba(255, 107, 53, 0.35);
+    --text-main: #f8fafc;
     --text-muted: #9499ad;
 }
 

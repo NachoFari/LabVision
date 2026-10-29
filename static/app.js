@@ -76,7 +76,7 @@ function loadStoredPreferences() {
 
   // 1. Cargar Tema
 
-  const savedTheme = localStorage.getItem('labvision_theme') || localStorage.getItem('lab_theme') || 'fox';
+  const savedTheme = localStorage.getItem('labvision_theme') || localStorage.getItem('lab_theme') || 'labvision';
 
   applyTheme(savedTheme, false);
 
@@ -309,11 +309,11 @@ function closeSettingsModal() {
 // ================= TEMAS VISUALES =================
 
 function applyTheme(themeId, save = true) {
-  if (!themeId) themeId = 'fox';
+  if (!themeId) themeId = 'labvision';
 
   // Normalizar nombres legacy si vienen con prefijo 'theme-'
   let normId = themeId;
-  if (themeId === 'theme-dark') normId = 'fox';
+  if (themeId === 'theme-dark' || themeId === 'dark') normId = 'labvision';
   else if (themeId === 'theme-light') normId = 'rabbit';
   else if (themeId === 'theme-oled') normId = 'panther';
   else if (themeId === 'theme-sepia') normId = 'coffee';
@@ -596,9 +596,9 @@ function switchMode(mode) {
 
   if (mode === 'viscometer') {
 
-    tabVisc.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm";
+    if (tabVisc) tabVisc.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm";
 
-    tabBal.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800";
+    if (tabBal) tabBal.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800";
 
     viscCards.classList.remove('hidden');
 
@@ -632,9 +632,9 @@ function switchMode(mode) {
 
   } else {
 
-    tabBal.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm";
+    if (tabBal) tabBal.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all bg-brand-600 text-white shadow-sm";
 
-    tabVisc.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800";
+    if (tabVisc) tabVisc.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800";
 
     viscCards.classList.add('hidden');
 
@@ -810,7 +810,7 @@ async function loadFramePreview(source) {
 
   if (res.error) {
 
-    alert("Error al cargar imagen previa: " + res.error);
+    showLabToast("Error al cargar imagen previa: " + res.error, "error");
 
     return;
 
@@ -1528,7 +1528,7 @@ async function startExtraction() {
 
   if (res.error) {
 
-    alert("Error al iniciar: " + res.error);
+    showLabToast("Error al iniciar: " + res.error, "error");
 
     setExtractionControlsLocked(false);
 
@@ -1870,7 +1870,7 @@ async function updateLiveStatus() {
 
       setExtractionControlsLocked(false);
 
-      alert("Error: " + state.error_msg);
+      showLabToast("Error: " + state.error_msg, "error");
 
       document.getElementById('btn-start').disabled = false;
 
@@ -2026,7 +2026,7 @@ async function openExcelResult() {
 
   const res = await window.pywebview.api.open_excel();
 
-  if (res.error) alert(res.error);
+  if (res.error) showLabToast(res.error, "error");
 
 }
 
@@ -2048,7 +2048,7 @@ async function openCsvResult() {
 
     } else {
 
-      alert(res.error);
+      showLabToast(res.error, "error");
 
     }
 
@@ -2064,7 +2064,7 @@ async function openOutputFolder() {
 
   const res = await window.pywebview.api.open_folder();
 
-  if (res.error) alert(res.error);
+  if (res.error) showLabToast(res.error, "error");
 
 }
 
@@ -2608,7 +2608,7 @@ async function executeCsvExport() {
 
     if (checked.length === 0) {
 
-      alert('Debes seleccionar al menos una columna para exportar.');
+      showLabToast('Debes seleccionar al menos una columna para exportar.', 'error');
 
       return;
 
@@ -2640,21 +2640,19 @@ async function executeCsvExport() {
 
         } else {
 
-          alert(`CSV exportado exitosamente:
-
-${res.file_path}`);
+          showLabToast(`CSV exportado exitosamente: ${res.file_path}`, "success");
 
         }
 
       } else {
 
-        alert(res.error || 'Error al exportar CSV');
+        showLabToast(res.error || 'Error al exportar CSV', 'error');
 
       }
 
     } catch (e) {
 
-      alert('Error en llamada a export_csv_now: ' + e);
+      showLabToast('Error en llamada a export_csv_now: ' + e, 'error');
 
     }
 
@@ -2740,6 +2738,18 @@ window.addEventListener('DOMContentLoaded', () => {
     else if (hash === '#tutorial') openTutorialModal();
 
     else if (hash === '#discord') openDiscordModal();
+    else if (hash === '#settings') openSettingsModal();
+    else if (hash === '#themes') openThemesModal();
+    else if (hash === '#builder') openTemplateBuilder();
+    else if (hash === '#dialog') {
+      showLabConfirm({
+        title: '¿Eliminar todos los Sub-ROIs?',
+        message: '¿Estás seguro de que deseas eliminar todas las variables y regiones creadas en esta plantilla? Esta acción no se puede deshacer.',
+        confirmText: 'Sí, eliminar todo',
+        cancelText: 'Cancelar',
+        danger: true
+      });
+    }
 
 
 

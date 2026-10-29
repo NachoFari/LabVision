@@ -205,7 +205,142 @@ function showLabToast(message, type = "info") {
   }, 4000);
 }
 
+// ================= 4. DIÁLOGOS TEMÁTICOS DE LABORATORIO (Reemplazo confirm() y alert()) =================
+
+let labDialogResolve = null;
+
+function showLabConfirm({
+  title = "Confirmación",
+  message = "¿Deseas continuar con esta acción?",
+  confirmText = "Aceptar",
+  cancelText = "Cancelar",
+  danger = false
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('modal-lab-dialog');
+    const titleEl = document.getElementById('lab-dialog-title');
+    const msgEl = document.getElementById('lab-dialog-message');
+    const btnConfirm = document.getElementById('lab-dialog-btn-confirm');
+    const btnCancel = document.getElementById('lab-dialog-btn-cancel');
+    const iconBox = document.getElementById('lab-dialog-icon-box');
+
+    if (!modal) {
+      resolve(window.confirm(message));
+      return;
+    }
+
+    if (titleEl) titleEl.innerText = title;
+    if (msgEl) msgEl.innerText = message;
+    if (btnConfirm) {
+      btnConfirm.innerText = confirmText;
+      if (danger) {
+        btnConfirm.className = "px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 shadow-sm transition-colors cursor-pointer";
+      } else {
+        btnConfirm.className = "px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 shadow-sm transition-colors cursor-pointer";
+      }
+    }
+    if (btnCancel) {
+      btnCancel.innerText = cancelText;
+      btnCancel.classList.remove('hidden');
+    }
+
+    if (iconBox) {
+      if (danger) {
+        iconBox.className = "w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-400 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-5 h-5 text-rose-400" viewBox="0 0 16 16" fill="currentColor"><rect x="7" y="3" width="2" height="6"/><rect x="7" y="11" width="2" height="2"/></svg>`;
+      } else {
+        iconBox.className = "w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-800 text-cyan-400 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-5 h-5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor"><rect x="7" y="7" width="2" height="5"/><rect x="7" y="4" width="2" height="2"/></svg>`;
+      }
+    }
+
+    labDialogResolve = resolve;
+    modal.classList.remove('hidden');
+  });
+}
+
+function showLabAlert({
+  title = "Aviso del Sistema",
+  message = "",
+  type = "info"
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('modal-lab-dialog');
+    const titleEl = document.getElementById('lab-dialog-title');
+    const msgEl = document.getElementById('lab-dialog-message');
+    const btnConfirm = document.getElementById('lab-dialog-btn-confirm');
+    const btnCancel = document.getElementById('lab-dialog-btn-cancel');
+    const iconBox = document.getElementById('lab-dialog-icon-box');
+
+    if (!modal) {
+      showLabToast(message, type);
+      resolve();
+      return;
+    }
+
+    if (titleEl) titleEl.innerText = title;
+    if (msgEl) msgEl.innerText = message;
+    if (btnConfirm) {
+      btnConfirm.innerText = "Entendido";
+      btnConfirm.className = "px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 shadow-sm transition-colors cursor-pointer";
+    }
+    if (btnCancel) {
+      btnCancel.classList.add('hidden');
+    }
+
+    if (iconBox) {
+      if (type === 'error') {
+        iconBox.className = "w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-800 text-rose-400 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-5 h-5 text-rose-400" viewBox="0 0 16 16" fill="currentColor"><rect x="7" y="3" width="2" height="6"/><rect x="7" y="11" width="2" height="2"/></svg>`;
+      } else {
+        iconBox.className = "w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-800 text-cyan-400 flex items-center justify-center shrink-0";
+        iconBox.innerHTML = `<svg class="w-5 h-5 text-cyan-400" viewBox="0 0 16 16" fill="currentColor"><rect x="7" y="7" width="2" height="5"/><rect x="7" y="4" width="2" height="2"/></svg>`;
+      }
+    }
+
+    labDialogResolve = resolve;
+    modal.classList.remove('hidden');
+  });
+}
+
+function handleLabDialogAction(confirmed) {
+  const modal = document.getElementById('modal-lab-dialog');
+  if (modal) modal.classList.add('hidden');
+  if (labDialogResolve) {
+    const cb = labDialogResolve;
+    labDialogResolve = null;
+    cb(confirmed);
+  }
+}
+
+// Interceptación de alert() nativo para usar modal o toast temático
+window.alert = function(msg) {
+  showLabAlert({ title: 'Aviso de LabVision', message: String(msg) });
+};
+
+// ================= 5. GESTIÓN DEL MODAL DE TEMAS DEDICADO =================
+
+function openThemesModal() {
+  const modal = document.getElementById('modal-themes');
+  if (!modal) return;
+  const active = document.documentElement.getAttribute('data-theme') || 'labvision';
+  if (typeof renderThemeSelectorGrid === 'function') {
+    renderThemeSelectorGrid(active);
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeThemesModal() {
+  const modal = document.getElementById('modal-themes');
+  if (modal) modal.classList.add('hidden');
+}
+
 window.takeScreenshotUI = takeScreenshotUI;
 window.checkForUpdatesUI = checkForUpdatesUI;
 window.installUpdateUI = installUpdateUI;
 window.showLabToast = showLabToast;
+window.showLabConfirm = showLabConfirm;
+window.showLabAlert = showLabAlert;
+window.handleLabDialogAction = handleLabDialogAction;
+window.openThemesModal = openThemesModal;
+window.closeThemesModal = closeThemesModal;
