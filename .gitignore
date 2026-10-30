@@ -1,21 +1,43 @@
-# ==========================================
-# LabVision - .gitignore
-# Creado por NachoFari
-# ==========================================
+# ==============================================================================
+# LabVision - .gitignore (Clean & Essential Repository)
+# ==============================================================================
 
-# Byte-compiled / optimized / DLL files
+# Python Byte-compiled & Optimized Files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# C# / .NET build artifacts
+# Executables & Native Binaries
+*.exe
+*.dll
+*.pyd
+
+# Windows Scripts & Installers (distribuídos vía Releases, no en Git)
+*.bat
+*.vbs
+*.ps1
+*.iss
+*.cmd
+
+# C# Source & Build Artifacts (Launcher)
+*.cs
+*.csproj
+*.sln
 *.pdb
 *.obj
-dist/
-*.zip
 
-# Entornos virtuales y runtime portable
+# Accesos directos y enlaces
+*.lnk
+
+# Distribución y Empaquetado
+dist/
+build/
+*.zip
+*.tar.*
+*.7z
+
+# Entornos virtuales y Runtime portable
 .venv/
 venv/
 ENV/
@@ -24,23 +46,34 @@ env.bak/
 venv.bak/
 runtime/
 
-# Modelos pesados de Deep Learning (los pesos .pth se empaquetan en el instalador)
-models/*
-!models/.gitkeep
+# Suites de prueba y Benchmarks de desarrollo
+benchmark/
+tests/
 
-# Videos y grabaciones de prueba
+# Modelos pesados de Deep Learning
+models/
+
+# Salida de mediciones e historial local
+output/
+
+# Archivos de configuración local y credenciales
+config.json
+
+# Logs y depuración
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Videos y grabaciones de laboratorio de prueba
 *.mp4
 *.avi
 *.mov
 *.mkv
 *.wmv
 
-# Carpeta de salida de mediciones (mantener solo .gitkeep)
-output/*
-!output/.gitkeep
-
-# Archivos de configuración con secretos (webhooks de Discord)
-config.json
+# Íconos de compilación en raíz (los del sistema residen en static/)
+/fox.ico
+/labvision.ico
 
 # IDEs y Editores
 .vscode/
@@ -53,11 +86,5 @@ config.json
 # Archivos del Sistema Operativo
 Thumbs.db
 Desktop.ini
-*.lnk
 $RECYCLE.BIN/
 .DS_Store
-
-# Logs temporales
-*.log
-npm-debug.log*
-yarn-debug.log*

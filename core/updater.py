@@ -37,7 +37,7 @@ class GitHubUpdater:
     DEFAULT_TIMEOUT: float = 4.0
     USER_AGENT: str = "LabVision-Workstation-Updater/1.0 (Windows NT; Scientific Rig)"
 
-    def __init__(self, current_version: str = "0.8.0", repo: str = DEFAULT_REPO):
+    def __init__(self, current_version: str = "0.8.5", repo: str = DEFAULT_REPO):
         """
         Initializes an updater instance for a specific version and repository.
 
@@ -84,7 +84,7 @@ class GitHubUpdater:
     @classmethod
     def check_updates(
         cls,
-        current_version: str = "0.8.0",
+        current_version: str = "0.8.5",
         repo: str = DEFAULT_REPO,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> Dict[str, Any]:

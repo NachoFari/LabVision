@@ -23,18 +23,18 @@
     --text-muted: #94a3b8;
 }
 
-/* 1. Fox - Zorro Clásico (Dark / Tonos Naranjas Cálidos de Laboratorio) */
+/* 1. Fox - Zorro Clásico (Dark / NEGRO PURO & NARANJA FUEGO) */
 [data-theme="fox"] {
-    --bg-dark: #121318;
-    --bg-surface: #1a1c26;
-    --bg-elevated: #242738;
-    --border-color: #31364d;
-    --border-subtle: rgba(255, 107, 53, 0.12);
-    --fox-orange: #FF6B35;
-    --fox-orange-hover: #ff7e4a;
-    --fox-orange-glow: rgba(255, 107, 53, 0.35);
-    --text-main: #f8fafc;
-    --text-muted: #9499ad;
+    --bg-dark: #000000;
+    --bg-surface: #0a0a0c;
+    --bg-elevated: #141418;
+    --border-color: #26262b;
+    --border-subtle: rgba(255, 102, 0, 0.2);
+    --fox-orange: #ff6600;
+    --fox-orange-hover: #ff7711;
+    --fox-orange-glow: rgba(255, 102, 0, 0.45);
+    --text-main: #ffffff;
+    --text-muted: #a1a1aa;
 }
 
 /* 2. Rabbit - Conejo Algodón (Light / Algodón) & Alias 'light' */
@@ -1018,4 +1018,190 @@ html[data-theme] body {
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.05em;
+}
+
+
+/* ==========================================================================
+   TEMA ZORRO CLÁSICO (NEGRO PURO Y NARANJA FUEGO / LABVISION FOX)
+   ========================================================================== */
+[data-theme="fox"] body,
+html[data-theme="fox"] body {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="fox"] .bg-lab-dark {
+    background-color: #000000 !important;
+}
+
+[data-theme="fox"] .bg-lab-card,
+[data-theme="fox"] .bg-slate-900,
+[data-theme="fox"] .bg-slate-900\/80,
+[data-theme="fox"] .bg-slate-900\/90 {
+    background-color: #09090b !important;
+    border-color: #27272a !important;
+}
+
+[data-theme="fox"] .bg-slate-800,
+[data-theme="fox"] .bg-slate-800\/80,
+[data-theme="fox"] .bg-slate-800\/60,
+[data-theme="fox"] .bg-slate-800\/50,
+[data-theme="fox"] .bg-slate-800\/40 {
+    background-color: #141418 !important;
+    border-color: #27272a !important;
+}
+
+[data-theme="fox"] .border-lab-border,
+[data-theme="fox"] .border-slate-800,
+[data-theme="fox"] .border-slate-700 {
+    border-color: #27272a !important;
+}
+
+/* Botones principales y navegación activa en Naranja Brillante */
+[data-theme="fox"] .bg-brand-600,
+[data-theme="fox"] #nav-btn-live.bg-brand-600,
+[data-theme="fox"] #tab-history-current.bg-brand-600,
+[data-theme="fox"] #tab-history-saved.bg-brand-600,
+[data-theme="fox"] #btn-start-reading,
+[data-theme="fox"] button.bg-brand-600 {
+    background: linear-gradient(135deg, #ff6600, #ea580c) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(255, 102, 0, 0.45) !important;
+    border: none !important;
+}
+
+[data-theme="fox"] .hover\:bg-brand-500:hover,
+[data-theme="fox"] button.bg-brand-600:hover,
+[data-theme="fox"] #btn-start-reading:hover {
+    background: linear-gradient(135deg, #ff7711, #f97316) !important;
+    box-shadow: 0 0 20px rgba(255, 119, 17, 0.6) !important;
+}
+
+/* Todos los acentos y textos Cyan convertidos a Naranja Fuego */
+[data-theme="fox"] .text-cyan-400,
+[data-theme="fox"] .text-cyan-300,
+[data-theme="fox"] .text-cyan-200 {
+    color: #ff7711 !important;
+}
+
+[data-theme="fox"] .text-cyan-500 {
+    color: #ff6600 !important;
+}
+
+/* Badges y fondos Cyan convertidos a fondos carbón con borde naranja */
+[data-theme="fox"] .bg-cyan-950,
+[data-theme="fox"] .bg-cyan-950\/60,
+[data-theme="fox"] .bg-cyan-950\/70,
+[data-theme="fox"] .bg-cyan-900,
+[data-theme="fox"] .bg-cyan-900\/60 {
+    background-color: #1a0b04 !important;
+    border-color: #662708 !important;
+    color: #ff8533 !important;
+}
+
+[data-theme="fox"] .border-cyan-800,
+[data-theme="fox"] .border-cyan-700,
+[data-theme="fox"] .border-cyan-700\/80,
+[data-theme="fox"] .border-cyan-700\/70,
+[data-theme="fox"] .border-cyan-700\/60,
+[data-theme="fox"] .border-cyan-500 {
+    border-color: #8c360b !important;
+}
+
+/* Botones de acción Cyan convertidos a Naranja */
+[data-theme="fox"] .bg-cyan-600 {
+    background-color: #ff6600 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="fox"] .hover\:bg-cyan-500:hover,
+[data-theme="fox"] .bg-cyan-600:hover {
+    background-color: #ff7711 !important;
+}
+
+[data-theme="fox"] .bg-cyan-800 {
+    background-color: #b34700 !important;
+}
+
+/* Inputs y Selects activos */
+[data-theme="fox"] input:focus,
+[data-theme="fox"] select:focus {
+    border-color: #ff6600 !important;
+    box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.3) !important;
+}
+
+[data-theme="fox"] .theme-card-option.active {
+    border-color: #ff6600 !important;
+    box-shadow: 0 0 0 2px #ff6600, 0 4px 14px rgba(255, 102, 0, 0.4) !important;
+}
+
+
+/* Refinamiento Máximo Fox: Botones principales y SVG icons en Naranja */
+[data-theme="fox"] #btn-start,
+[data-theme="fox"] .from-emerald-600,
+[data-theme="fox"] .to-teal-500,
+[data-theme="fox"] button#btn-start.bg-gradient-to-r {
+    background: linear-gradient(135deg, #ff6600, #ea580c) !important;
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.5) !important;
+    border: none !important;
+}
+
+[data-theme="fox"] #btn-start:hover {
+    background: linear-gradient(135deg, #ff7711, #f97316) !important;
+    box-shadow: 0 0 28px rgba(255, 119, 17, 0.75) !important;
+}
+
+[data-theme="fox"] .border-brand-500 {
+    border-color: #ff6600 !important;
+}
+
+[data-theme="fox"] .bg-brand-500\/10 {
+    background-color: rgba(255, 102, 0, 0.18) !important;
+}
+
+[data-theme="fox"] .text-brand-400 {
+    color: #ff7711 !important;
+}
+
+[data-theme="fox"] svg rect[fill="#38bdf8"] {
+    fill: #ff6600 !important;
+}
+
+[data-theme="fox"] svg rect[fill="#0284c7"] {
+    fill: #ea580c !important;
+}
+
+[data-theme="fox"] svg rect[fill="#0369a1"] {
+    fill: #c2410c !important;
+}
+
+[data-theme="fox"] svg rect[fill="#bae6fd"] {
+    fill: #ffedd5 !important;
+}
+
+
+/* ==========================================================================
+   REACTIVIDAD UNIVERSAL DEL MATRAZ ERLENMEYER (TODOS LOS TEMAS)
+   ========================================================================== */
+[data-theme] .flask-liquid-top {
+    fill: var(--fox-orange, #38bdf8) !important;
+}
+
+[data-theme] .flask-liquid-mid {
+    fill: var(--fox-orange-hover, #0284c7) !important;
+}
+
+[data-theme] .flask-liquid-bot {
+    fill: var(--border-color, #0369a1) !important;
+    filter: brightness(0.85);
+}
+
+[data-theme] .flask-liquid-foam {
+    fill: var(--text-main, #bae6fd) !important;
+    opacity: 0.8;
+}
+
+[data-theme] .w-8.h-8.rounded-xl.bg-gradient-to-tr {
+    background: linear-gradient(135deg, var(--fox-orange, #0284c7), var(--fox-orange-hover, #06b6d4)) !important;
+    box-shadow: 0 0 14px var(--fox-orange-glow, rgba(56, 189, 248, 0.35)) !important;
 }

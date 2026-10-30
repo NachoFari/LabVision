@@ -2774,7 +2774,9 @@ function handleInitialDeepNavigation() {
     });
   }
 
-  if (window.location.search.includes('theme=light')) applyTheme('theme-light');
+  const themeParam = urlParams.get('theme');
+  if (themeParam) applyTheme(themeParam);
+  else if (window.location.search.includes('theme=light')) applyTheme('theme-light');
   else if (window.location.search.includes('theme=oled')) applyTheme('theme-oled');
   else if (window.location.search.includes('theme=sepia')) applyTheme('theme-sepia');
 }

@@ -836,12 +836,7 @@ class LabVisionAPI:
         """Consulta GitHub Releases para comprobar si hay actualizaciones disponibles."""
         try:
             from core.updater import GitHubUpdater
-            updater = GitHubUpdater(current_version="0.8.0")
-            if not asset_url:
-                check = updater.check_updates()
-                asset_url = check.get("asset_url")
-                if not asset_url:
-                    return {"success": False, "error": "No se encontró instalador en GitHub."}
+            updater = GitHubUpdater(current_version="0.8.5")
             return updater.check_updates()
         except Exception as e:
             return {"online": False, "update_available": False, "error": str(e)}
@@ -850,7 +845,7 @@ class LabVisionAPI:
         """Descarga e inicia la actualización automática de LabVision."""
         try:
             from core.updater import GitHubUpdater
-            updater = GitHubUpdater(current_version="0.8.0")
+            updater = GitHubUpdater(current_version="0.8.5")
             dest_file = updater.download_update_stream(asset_url)
             updater.apply_update(dest_file, silent=False)
             return {"success": True}
