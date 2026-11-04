@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="static/lab_badge_256.png" alt="LabVision Logo" width="115" />
 
@@ -153,3 +153,9 @@ LabVision/
 <div align="center">
 Desarrollado con ❤️ por <b>NachoFari</b> — <b>NaTex Studio</b> 🦊
 </div>
+
+---
+
+## ⚖️ Licencia
+
+Este proyecto está licenciado bajo la **GNU General Public License v3.0 (GPLv3)**. Consulta el archivo [LICENSE](LICENSE) para más información.
